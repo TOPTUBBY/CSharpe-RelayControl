@@ -1,0 +1,10 @@
+D:\10_Project\C#\CSharpe-RelayControl\RelayControl\RelayControl\bin\Debug\RelayControl.exe
+D:\10_Project\C#\CSharpe-RelayControl\RelayControl\RelayControl\bin\Debug\RelayControl.pdb
+D:\10_Project\C#\CSharpe-RelayControl\RelayControl\RelayControl\obj\Debug\RelayControl.csproj.AssemblyReference.cache
+D:\10_Project\C#\CSharpe-RelayControl\RelayControl\RelayControl\obj\Debug\RelayControl.Properties.Resources.resources
+D:\10_Project\C#\CSharpe-RelayControl\RelayControl\RelayControl\obj\Debug\RelayControl.csproj.GenerateResource.cache
+D:\10_Project\C#\CSharpe-RelayControl\RelayControl\RelayControl\obj\Debug\RelayControl.csproj.CoreCompileInputs.cache
+D:\10_Project\C#\CSharpe-RelayControl\RelayControl\RelayControl\obj\Debug\RelayControl.exe
+D:\10_Project\C#\CSharpe-RelayControl\RelayControl\RelayControl\obj\Debug\RelayControl.pdb
+D:\10_Project\C#\CSharpe-RelayControl\RelayControl\RelayControl\obj\Debug\RelayControlApp.Form1.resources
+D:\10_Project\C#\CSharpe-RelayControl\RelayControl\RelayControl\bin\Debug\RelayControl.exe.config
