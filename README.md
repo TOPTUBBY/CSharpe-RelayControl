@@ -80,62 +80,50 @@ You can upload the following code to your ESP32 using the Arduino IDE.
 ```cpp
 #include <Preferences.h>
 
-// กำหนดขา GPIO (ปรับตามการต่อจริง) / Define GPIO pins (Adjust according to your wiring)
 const int relayPins[] = {13, 12, 14, 27, 26, 25, 33, 32};
 byte currentRelayState = 0x00; 
-
 Preferences pref;
 
 const byte STX = 0x02;
 const byte ETX = 0x03;
-const byte REQ_STATUS = 0x05;
 
 void setup() {
   Serial.begin(115200);
-  
-  // เปิดโหมดเก็บข้อมูลถาวร (Open non-volatile storage mode)
   pref.begin("relay-app", false);
   currentRelayState = pref.getUChar("state", 0x00);
 
   for (int i = 0; i < 8; i++) {
     pinMode(relayPins[i], OUTPUT);
-    // ทำงานตามค่าล่าสุดที่จำได้ทันที (Restore last saved state)
     bool bitValue = (currentRelayState >> i) & 0x01;
     digitalWrite(relayPins[i], bitValue ? LOW : HIGH); 
   }
 }
 
 void loop() {
-  if (Serial.available() > 0) {
-    byte firstByte = Serial.peek();
+  if (Serial.available() >= 4) {
+    if (Serial.read() == STX) {
+      byte data = Serial.read();
+      byte checksum = Serial.read();
+      byte stopByte = Serial.read();
 
-    if (firstByte == STX) {
-      if (Serial.available() >= 4) {
-        Serial.read(); // STX
-        byte data = Serial.read();
-        byte checksum = Serial.read();
-        byte stopByte = Serial.read();
-
-        if ((data == checksum) && (stopByte == ETX)) {
+      // ตรวจสอบ XOR Checksum (Data ^ Checksum ต้องได้ 0xFF)
+      if (((data ^ checksum) == 0xFF) && (stopByte == ETX)) {
+        if (data == 0x05) {
+          // กรณีได้รับเฟรมขอสถานะ 02 05 FA 03
+          sendFeedback(currentRelayState);
+        } else {
+          // กรณีได้รับเฟรมควบคุม Relay ปกติ
           updateRelays(data);
           sendFeedback(data);
         }
       }
-    } 
-    else if (firstByte == REQ_STATUS) {
-      Serial.read(); // เคลียร์ 0x05 (Clear 0x05)
-      sendFeedback(currentRelayState); 
-    } 
-    else {
-      Serial.read(); // ทิ้งขยะ (Discard junk bytes)
     }
   }
 }
 
 void updateRelays(byte state) {
   currentRelayState = state;
-  pref.putUChar("state", state); // บันทึกสถานะลง Flash (Save state to Flash)
-  
+  pref.putUChar("state", state);
   for (int i = 0; i < 8; i++) {
     bool bitValue = (state >> i) & 0x01;
     digitalWrite(relayPins[i], bitValue ? LOW : HIGH);
@@ -143,10 +131,11 @@ void updateRelays(byte state) {
 }
 
 void sendFeedback(byte state) {
-  byte frame[] = {STX, state, state, ETX};
+  byte chk = 0xFF ^ state; // คำนวณ XOR Checksum
+  byte frame[] = {STX, state, chk, ETX};
   Serial.write(frame, 4);
 }
 ```
 
 ---
-**Developer:** TOPTUBBY (Patiphan Phakdeeburi) | **Version:** 1.0.5.26
+**Developer:** TOPTUBBY (Patiphan Phakdeeburi) | **Version:** 1.1.5.26
