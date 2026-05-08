@@ -139,3 +139,7 @@ void sendFeedback(byte state) {
 
 ---
 **Developer:** TOPTUBBY (Patiphan Phakdeeburi) | **Version:** 1.1.5.26
+
+### 📜 License / ลิขสิทธิ์
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.  
+โปรเจคนี้อยู่ภายใต้ลิขสิทธิ์ **MIT License** - สามารถอ่านรายละเอียดเพิ่มเติมได้ที่ไฟล์ [LICENSE](LICENSE)
