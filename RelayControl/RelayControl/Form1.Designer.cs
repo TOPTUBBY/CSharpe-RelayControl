@@ -208,7 +208,7 @@
             this.MaximizeBox = false;
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "RELAY CONTROL v1.0";
+            this.Text = "RELAY CONTROL v1.1";
             this.ResumeLayout(false);
             this.PerformLayout();
 

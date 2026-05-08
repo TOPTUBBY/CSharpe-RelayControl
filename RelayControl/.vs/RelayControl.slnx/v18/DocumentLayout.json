@@ -33,8 +33,8 @@
               "Title": "RelayControl",
               "DocumentMoniker": "D:\\10_Project\\C#\\CSharpe-RelayControl\\RelayControl\\RelayControl\\RelayControl.csproj",
               "RelativeDocumentMoniker": "RelayControl\\RelayControl.csproj",
-              "ToolTip": "D:\\10_Project\\C#\\CSharpe-RelayControl\\RelayControl\\RelayControl\\RelayControl.csproj",
-              "RelativeToolTip": "RelayControl\\RelayControl.csproj",
+              "ToolTip": "D:\\10_Project\\C#\\CSharpe-RelayControl\\RelayControl\\RelayControl\\RelayControl.csproj*",
+              "RelativeToolTip": "RelayControl\\RelayControl.csproj*",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
               "WhenOpened": "2026-05-06T08:39:49.883Z"
             },
@@ -46,7 +46,7 @@
               "RelativeDocumentMoniker": "RelayControl\\Form1.cs",
               "ToolTip": "D:\\10_Project\\C#\\CSharpe-RelayControl\\RelayControl\\RelayControl\\Form1.cs",
               "RelativeToolTip": "RelayControl\\Form1.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-05T12:27:37.714Z",
               "EditorCaption": ""
@@ -60,7 +60,8 @@
               "ToolTip": "D:\\10_Project\\C#\\CSharpe-RelayControl\\RelayControl\\RelayControl\\Form1.cs [Design]",
               "RelativeToolTip": "RelayControl\\Form1.cs [Design]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-05T12:21:36.028Z"
+              "WhenOpened": "2026-05-05T12:21:36.028Z",
+              "EditorCaption": " [Design]"
             }
           ]
         }

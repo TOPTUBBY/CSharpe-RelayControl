@@ -12,8 +12,10 @@
 //  an ESP32-based 8-channel relay module, updates UI checkboxes, sends framed
 //  commands and processes status feedback.
 //  ------------------------------------------------------------------------------
-//v1.0.5.26                                                           06 May 2025
+//v1.0.5.2026                                                           06 May 2025
 //  - 1st release version. Basic functionality implemented and tested with ESP32.
+//v1.1.5.2026
+//  - Modify protocol chksum from same as data to Data XOR 0xFF
 //################################################################################
 
 using System;
@@ -90,10 +92,10 @@ namespace RelayControlApp
                     btnConnect.BackColor = Color.Salmon;
                     AddStatusLog($"Connected to {serialPort1.PortName}");
 
-                    // ถามสถานะหลังจากเชื่อมต่อ 1 วินาที
+                    // ส่งคำสั่งขอสถานะแบบ XOR Checksum: 02 05 FA 03
                     Timer t = new Timer { Interval = 1000 };
                     t.Tick += (s, ev) => {
-                        if (serialPort1.IsOpen) serialPort1.Write(new byte[] { 0x05 }, 0, 1);
+                        if (serialPort1.IsOpen) SendProtocolFrame(0x05);
                         t.Stop();
                     };
                     t.Start();
@@ -118,46 +120,49 @@ namespace RelayControlApp
             if (isUpdatingUI || !serialPort1.IsOpen) return;
 
             CheckBox chk = sender as CheckBox;
-            int index = int.Parse(chk.Tag.ToString()); // อย่าลืมใส่ Tag 0-7 ในหน้า Design
+            int index = int.Parse(chk.Tag.ToString());
 
             if (chk.Checked) currentStatus |= (byte)(1 << index);
             else currentStatus &= (byte)~(1 << index);
 
-            byte[] frame = { 0x02, currentStatus, currentStatus, 0x03 };
-            serialPort1.Write(frame, 0, 4);
+            SendProtocolFrame(currentStatus);
+        }
 
-            // แสดงผล Command Sent เป็น HEX (02 01 01 03)
-            string hexStr = BitConverter.ToString(frame).Replace("-", " ");
-            AddStatusLog($"Command Sent: {hexStr}");
+        private void SendProtocolFrame(byte data)
+        {
+            if (serialPort1.IsOpen)
+            {
+                byte chksum = (byte)(0xFF ^ data); // XOR Checksum
+                byte[] frame = { 0x02, data, chksum, 0x03 };
+                serialPort1.Write(frame, 0, 4);
+
+                string hexStr = BitConverter.ToString(frame).Replace("-", " ");
+                AddStatusLog($"Command Sent: {hexStr}");
+            }
         }
 
         private void serialPort1_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             try
             {
-                while (serialPort1.IsOpen && serialPort1.BytesToRead > 0)
+                while (serialPort1.IsOpen && serialPort1.BytesToRead >= 4)
                 {
                     if (serialPort1.ReadByte() == 0x02)
                     {
-                        int wait = 0;
-                        while (serialPort1.BytesToRead < 3 && wait < 50) { System.Threading.Thread.Sleep(1); wait++; }
+                        byte data = (byte)serialPort1.ReadByte();
+                        byte chksum = (byte)serialPort1.ReadByte();
+                        byte stop = (byte)serialPort1.ReadByte();
 
-                        if (serialPort1.BytesToRead >= 3)
+                        // ตรวจสอบ XOR Checksum
+                        if (((data ^ chksum) == 0xFF) && stop == 0x03)
                         {
-                            byte data = (byte)serialPort1.ReadByte();
-                            byte chksum = (byte)serialPort1.ReadByte();
-                            byte stop = (byte)serialPort1.ReadByte();
+                            byte[] fullFrame = { 0x02, data, chksum, stop };
+                            string hexStatus = BitConverter.ToString(fullFrame).Replace("-", " ");
 
-                            if (data == chksum && stop == 0x03)
-                            {
-                                byte[] fullFrame = { 0x02, data, chksum, stop };
-                                string hexStatus = BitConverter.ToString(fullFrame).Replace("-", " ");
-
-                                this.Invoke(new MethodInvoker(delegate {
-                                    AddStatusLog($"Status Synced: {hexStatus}");
-                                    UpdateUIStatus(data);
-                                }));
-                            }
+                            this.Invoke(new MethodInvoker(delegate {
+                                AddStatusLog($"Status Synced: {hexStatus}");
+                                if (data != 0x05) UpdateUIStatus(data); // ถ้าไม่ใช่ 0x05 ให้อัปเดต UI
+                            }));
                         }
                     }
                 }
@@ -214,62 +219,50 @@ namespace RelayControlApp
 /*====================ARDUINO CODE FOR ESP32====================
 #include <Preferences.h>
 
-// กำหนดขา GPIO (ปรับตามการต่อจริง)
 const int relayPins[] = {13, 12, 14, 27, 26, 25, 33, 32};
 byte currentRelayState = 0x00; 
-
 Preferences pref;
 
 const byte STX = 0x02;
 const byte ETX = 0x03;
-const byte REQ_STATUS = 0x05;
 
 void setup() {
   Serial.begin(115200);
-  
-  // เปิดโหมดเก็บข้อมูลถาวร
   pref.begin("relay-app", false);
   currentRelayState = pref.getUChar("state", 0x00);
 
   for (int i = 0; i < 8; i++) {
     pinMode(relayPins[i], OUTPUT);
-    // ทำงานตามค่าล่าสุดที่จำได้ทันที
     bool bitValue = (currentRelayState >> i) & 0x01;
     digitalWrite(relayPins[i], bitValue ? LOW : HIGH); 
   }
 }
 
 void loop() {
-  if (Serial.available() > 0) {
-    byte firstByte = Serial.peek();
+  if (Serial.available() >= 4) {
+    if (Serial.read() == STX) {
+      byte data = Serial.read();
+      byte checksum = Serial.read();
+      byte stopByte = Serial.read();
 
-    if (firstByte == STX) {
-      if (Serial.available() >= 4) {
-        Serial.read(); // STX
-        byte data = Serial.read();
-        byte checksum = Serial.read();
-        byte stopByte = Serial.read();
-
-        if ((data == checksum) && (stopByte == ETX)) {
+      // ตรวจสอบ XOR Checksum (Data ^ Checksum ต้องได้ 0xFF)
+      if (((data ^ checksum) == 0xFF) && (stopByte == ETX)) {
+        if (data == 0x05) {
+          // กรณีได้รับเฟรมขอสถานะ 02 05 FA 03
+          sendFeedback(currentRelayState);
+        } else {
+          // กรณีได้รับเฟรมควบคุม Relay ปกติ
           updateRelays(data);
           sendFeedback(data);
         }
       }
-    } 
-    else if (firstByte == REQ_STATUS) {
-      Serial.read(); // เคลียร์ 0x05
-      sendFeedback(currentRelayState); 
-    } 
-    else {
-      Serial.read(); // ทิ้งขยะ
     }
   }
 }
 
 void updateRelays(byte state) {
   currentRelayState = state;
-  pref.putUChar("state", state); // บันทึกสถานะลง Flash
-  
+  pref.putUChar("state", state);
   for (int i = 0; i < 8; i++) {
     bool bitValue = (state >> i) & 0x01;
     digitalWrite(relayPins[i], bitValue ? LOW : HIGH);
@@ -277,7 +270,8 @@ void updateRelays(byte state) {
 }
 
 void sendFeedback(byte state) {
-  byte frame[] = {STX, state, state, ETX};
+  byte chk = 0xFF ^ state; // คำนวณ XOR Checksum
+  byte frame[] = {STX, state, chk, ETX};
   Serial.write(frame, 4);
 }
 
