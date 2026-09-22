@@ -80,7 +80,9 @@ You can upload the following code to your ESP32 using the Arduino IDE.
 ```cpp
 #include <Preferences.h>
 
-const int relayPins[] = {13, 12, 14, 27, 26, 25, 33, 32};
+// กำหนดขา GPIO (หลีกเลี่ยงขา 12, 34, 35, 36, 39)
+// ตัวอย่างนี้ใช้ขา: 14, 27, 26, 25, 33, 32, 4, 16
+const int relayPins[] = {14, 27, 26, 25, 33, 32, 4, 16};
 byte currentRelayState = 0x00; 
 Preferences pref;
 
@@ -94,36 +96,43 @@ void setup() {
 
   for (int i = 0; i < 8; i++) {
     pinMode(relayPins[i], OUTPUT);
+    // ทำงานตามสถานะล่าสุดที่บันทึกไว้ (Active Low)
     bool bitValue = (currentRelayState >> i) & 0x01;
     digitalWrite(relayPins[i], bitValue ? LOW : HIGH); 
   }
 }
 
 void loop() {
+  // รอจนกว่าข้อมูลจะเข้ามาอย่างน้อย 4 ไบต์
   if (Serial.available() >= 4) {
-    if (Serial.read() == STX) {
+    if (Serial.peek() == STX) {
+      Serial.read(); // เคลียร์ STX ออกจาก Buffer
       byte data = Serial.read();
       byte checksum = Serial.read();
       byte stopByte = Serial.read();
 
-      // ตรวจสอบ XOR Checksum (Data ^ Checksum ต้องได้ 0xFF)
+      // ตรวจสอบ XOR Checksum และ Stop Byte
       if (((data ^ checksum) == 0xFF) && (stopByte == ETX)) {
         if (data == 0x05) {
-          // กรณีได้รับเฟรมขอสถานะ 02 05 FA 03
+          // หากเป็นคำสั่ง 0x05 (ถามสถานะ) ให้ตอบกลับทันที
           sendFeedback(currentRelayState);
         } else {
-          // กรณีได้รับเฟรมควบคุม Relay ปกติ
+          // หากเป็นคำสั่งสั่งงาน Relay ให้อัปเดตและตอบกลับ
           updateRelays(data);
           sendFeedback(data);
         }
       }
+    } else {
+      // หากไบต์แรกไม่ใช่ STX ให้ทิ้งขยะไปทีละ 1 ไบต์
+      Serial.read(); 
     }
   }
 }
 
 void updateRelays(byte state) {
   currentRelayState = state;
-  pref.putUChar("state", state);
+  pref.putUChar("state", state); // บันทึกการเปลี่ยนแปลงลง Flash
+  
   for (int i = 0; i < 8; i++) {
     bool bitValue = (state >> i) & 0x01;
     digitalWrite(relayPins[i], bitValue ? LOW : HIGH);
@@ -131,7 +140,7 @@ void updateRelays(byte state) {
 }
 
 void sendFeedback(byte state) {
-  byte chk = 0xFF ^ state; // คำนวณ XOR Checksum
+  byte chk = 0xFF ^ state; // คำนวณ XOR Checksum ฝั่งส่งกลับ
   byte frame[] = {STX, state, chk, ETX};
   Serial.write(frame, 4);
 }
