@@ -145,6 +145,147 @@ void sendFeedback(byte state) {
   Serial.write(frame, 4);
 }
 ```
+---
+
+## 💻 Arduino Code (For ESP32-C3)
+note : USB CDC On Boot need to Enable
+
+```cpp
+#include <Preferences.h>
+
+// ESP32-C3: ใช้ขา 0-7 ซึ่งปลอดภัยและมักจะเรียงติดกัน
+const int relayPins[] = {0, 1, 2, 3, 4, 5, 6, 7};
+byte currentRelayState = 0x00; 
+Preferences pref;
+
+const byte STX = 0x02;
+const byte ETX = 0x03;
+
+void setup() {
+  Serial.begin(115200);
+  pref.begin("relay-app", false);
+  currentRelayState = pref.getUChar("state", 0x00);
+
+  for (int i = 0; i < 8; i++) {
+    pinMode(relayPins[i], OUTPUT);
+    bool bitValue = (currentRelayState >> i) & 0x01;
+    digitalWrite(relayPins[i], bitValue ? LOW : HIGH); 
+  }
+}
+
+void loop() {
+  if (Serial.available() >= 4) {
+    if (Serial.peek() == STX) {
+      Serial.read(); // เคลียร์ STX 
+      byte data = Serial.read();
+      byte checksum = Serial.read();
+      byte stopByte = Serial.read();
+
+      // ตรวจสอบ XOR Checksum
+      if (((data ^ checksum) == 0xFF) && (stopByte == ETX)) {
+        if (data == 0x05) {
+          sendFeedback(currentRelayState);
+        } else {
+          updateRelays(data);
+          sendFeedback(data);
+        }
+      }
+    } else {
+      Serial.read(); // ทิ้งขยะ
+    }
+  }
+}
+
+void updateRelays(byte state) {
+  currentRelayState = state;
+  pref.putUChar("state", state); 
+  
+  for (int i = 0; i < 8; i++) {
+    bool bitValue = (state >> i) & 0x01;
+    digitalWrite(relayPins[i], bitValue ? LOW : HIGH);
+  }
+}
+
+void sendFeedback(byte state) {
+  byte chk = 0xFF ^ state; 
+  byte frame[] = {STX, state, chk, ETX};
+  Serial.write(frame, 4);
+}
+```
+---
+
+## 💻 Arduino Code (For ESP8266)
+
+```cpp
+#include <EEPROM.h>
+
+// ESP8266: ใช้ขา D0 - D7 ตามลำดับ (ห้ามใช้ D8)
+const int relayPins[] = {16, 5, 4, 0, 2, 14, 12, 13}; 
+byte currentRelayState = 0x00; 
+
+const byte STX = 0x02;
+const byte ETX = 0x03;
+
+void setup() {
+  Serial.begin(115200);
+  
+  // ESP8266 ใช้ EEPROM ในการจำค่า (จองพื้นที่ 512 bytes)
+  EEPROM.begin(512);
+  currentRelayState = EEPROM.read(0);
+  
+  // กรณีบอร์ดใหม่ ค่าเริ่มต้นใน EEPROM จะเป็น 255 (0xFF) ให้เซ็ตกลับเป็น 0
+  if (currentRelayState == 0xFF) {
+    currentRelayState = 0x00;
+  }
+
+  for (int i = 0; i < 8; i++) {
+    pinMode(relayPins[i], OUTPUT);
+    bool bitValue = (currentRelayState >> i) & 0x01;
+    digitalWrite(relayPins[i], bitValue ? LOW : HIGH); 
+  }
+}
+
+void loop() {
+  if (Serial.available() >= 4) {
+    if (Serial.peek() == STX) {
+      Serial.read(); 
+      byte data = Serial.read();
+      byte checksum = Serial.read();
+      byte stopByte = Serial.read();
+
+      if (((data ^ checksum) == 0xFF) && (stopByte == ETX)) {
+        if (data == 0x05) {
+          sendFeedback(currentRelayState);
+        } else {
+          updateRelays(data);
+          sendFeedback(data);
+        }
+      }
+    } else {
+      Serial.read(); 
+    }
+  }
+}
+
+void updateRelays(byte state) {
+  currentRelayState = state;
+  
+  // บันทึกสถานะลง EEPROM ของ ESP8266 ที่ Address 0
+  EEPROM.write(0, state);
+  EEPROM.commit(); 
+  
+  for (int i = 0; i < 8; i++) {
+    bool bitValue = (state >> i) & 0x01;
+    digitalWrite(relayPins[i], bitValue ? LOW : HIGH);
+  }
+}
+
+void sendFeedback(byte state) {
+  byte chk = 0xFF ^ state; 
+  byte frame[] = {STX, state, chk, ETX};
+  Serial.write(frame, 4);
+}
+```
 
 ---
 **Developer:** TOPTUBBY (Patiphan Phakdeeburi) | **Version:** 1.1.5.26
