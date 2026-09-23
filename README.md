@@ -30,18 +30,22 @@
 
 จากภาพที่แนบมา โมดูลหนึ่งตัวมีรีเลย์ 4 ตัว รุ่นบนตัวรีเลย์อ่านได้ว่า `SRD-05VDC-SL-C`; ใช้ 2 โมดูล รวม 8 ช่อง ตัวอักษร **05VDC** บนตัวรีเลย์หมายถึงคอยล์ 5 V ไม่ได้ยืนยันว่าไฟเลี้ยงทั้งโมดูลเป็น 3.3 V หรือว่าขา `IN` รองรับสัญญาณ 3.3 V ต้องตรวจสเปกของ **โมดูลทั้งบอร์ด** หรือวัดวงจรจริงก่อนต่อไฟ แม้ร้านค้าจะเรียกว่า “3.3 V relay module” ก็ตาม อ้างอิง [datasheet รีเลย์ SRD ที่จัดทำโดย Songle](https://www.handsontec.com/dataspecs/relay/SRD-05VDC-SL-C.pdf)
 
-| GUI / บิตสถานะ | โมดูล | อินพุตบนโมดูล | GPIO ESP32 ตามโค้ดใน README | GPIO ESP32-C3 ตามโค้ดใน README | GPIO ESP8266 ตามโค้ดใน README |
+| GUI / บิตสถานะ | โมดูล | อินพุตบนโมดูล | ESP32 GPIO | ESP32-C3 SuperMini GPIO | ESP8266 NodeMCU/D1 mini |
 | --- | --- | --- | --- | --- | --- |
 | CH1 / bit 0 | A | IN1 | 14 | 0 | 16 (D0) |
 | CH2 / bit 1 | A | IN2 | 27 | 1 | 5 (D1) |
-| CH3 / bit 2 | A | IN3 | 26 | 2 ⚠ | 4 (D2) |
-| CH4 / bit 3 | A | IN4 | 25 | 3 | 0 (D3) ⚠ |
-| CH5 / bit 4 | B | IN1 | 33 | 4 | 2 (D4) ⚠ |
-| CH6 / bit 5 | B | IN2 | 32 | 5 | 14 (D5) |
-| CH7 / bit 6 | B | IN3 | 4 | 6 | 12 (D6) |
-| CH8 / bit 7 | B | IN4 | 16 | 7 | 13 (D7) |
+| CH3 / bit 2 | A | IN3 | 26 | 3 | 4 (D2) |
+| CH4 / bit 3 | A | IN4 | 25 | 4 | 0 (D3) ⚠ |
+| CH5 / bit 4 | B | IN1 | 33 | 5 | 2 (D4) ⚠ |
+| CH6 / bit 5 | B | IN2 | 32 | 6 | 14 (D5) |
+| CH7 / bit 6 | B | IN3 | 4 | 7 | 12 (D6) |
+| CH8 / bit 7 | B | IN4 | 16 | 10 | 13 (D7) |
 
-หมายเลข GPIO ในตารางมาจาก **โค้ดตัวอย่างใน README** เท่านั้น โค้ด ESP32 ที่คอมเมนต์ไว้ท้าย `Form1.cs` ใช้ขาคนละชุด; ตรวจว่าบอร์ดจริงแฟลชด้วยสเก็ตช์ใดและเดินสายตาม `relayPins[]` ของสเก็ตช์นั้นก่อนใช้งาน ⚠ GPIO2 บน ESP32-C3 และ GPIO0/2 บน ESP8266 เป็นขาที่มีผลต่อการบูต บอร์ดรีเลย์อาจดึงระดับไฟขณะเริ่มทำงาน; ดู [ข้อจำกัด GPIO ของ ESP32-C3](https://docs.espressif.com/projects/esp-idf/en/v4.4/esp32c3/api-reference/peripherals/gpio.html) และ pinout บอร์ดที่ใช้จริง
+ตารางตรงกับ `relayPins[]` ของสเก็ตช์แต่ละรุ่นด้านล่าง โดย CH1–CH4 ต่อ IN1–IN4 ของโมดูล A และ CH5–CH8 ต่อ IN1–IN4 ของโมดูล B; GPIO ในคอมเมนต์ท้าย `Form1.cs` ของ ESP32 รุ่นเดิมเป็นคนละชุด จึงต้องตรวจสเก็ตช์ที่แฟลชจริงก่อนต่อสาย
+
+- **ESP32-C3 SuperMini:** เดินสาย CH1–CH7 ตาม GPIO `0, 1, 3, 4, 5, 6, 7` บนฝั่งหนึ่ง โดยข้าม GPIO2 (strapping); CH8 ต่อ GPIO10 อีกฝั่ง ไม่ใช้ GPIO8/9 (strapping) หรือ GPIO18/19 (USB) ตรวจตำแหน่ง GPIO บนบอร์ด SuperMini รุ่นจริงก่อนเสียบสาย
+- **ESP8266 NodeMCU/D1 mini:** เดินสายเรียงตามป้ายบอร์ด `D0, D1, D2, D3, D4` แล้วต่อ `D5, D6, D7` อีกฝั่งตามตำแหน่งบนบอร์ดจริง; GPIO0/D3 (CH4) และ GPIO2/D4 (CH5) เป็นสองขา ⚠ ที่เลี่ยงไม่ได้เมื่อขับรีเลย์ 8 ช่องตรงและคง USB Serial อย่าใช้ GPIO15/D8 ซึ่งต้อง LOW ตอนบูต หรือ GPIO1/3 ที่ใช้ Serial กับ GUI
+- **สำคัญสำหรับ D3/D4:** ใช้เฉพาะอินพุตรีเลย์ active-low ที่ไม่ดึง GPIO0/2 ลง LOW ระหว่าง reset และไม่ป้อนไฟเกิน 3.3 V; ควรมี pull-up ไป 3.3 V ตามวงจรบอร์ดจริง (เช่น 10 kΩ หากยังไม่มี) แล้ววัดว่าทั้งสองขา HIGH ตั้งแต่ก่อนจ่ายไฟรีเลย์/เปิดเครื่อง หากบอร์ดบูตไม่ขึ้นหรือมีรีเลย์กระตุกระหว่างรีเซ็ต ต้องแก้ฮาร์ดแวร์หรือใช้ตัวขยาย GPIO ไม่สามารถแก้ด้วย `digitalWrite()` หลังบูตได้ ดู [Espressif: ESP32-C3 GPIO](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/peripherals/gpio.html) และ [ESP8266 boot mode](https://docs.espressif.com/projects/esptool/en/latest/esp8266/advanced-topics/boot-mode-selection.html)
 
 - ต่อ GND ของ ESP กับ GND ของโมดูล A/B ร่วมกัน **เมื่อใช้อินพุตควบคุมร่วมกัน**; ต่อ `IN1..IN4` ตามตาราง ตรวจตำแหน่ง `VCC/GND/IN` ที่พิมพ์บนบอร์ดจริงก่อนเสียบสาย
 - กำหนดไฟเลี้ยง `VCC` จากสเปกโมดูลที่ซื้อและผลวัด ไม่ต่อ 5 V เข้าขา GPIO/3V3 ของ ESP โดยตรง หากโมดูลรับอินพุต 3.3 V ไม่แน่นอนหรือมี pull-up ไป 5 V ให้ใช้วงจรขับ/level interface ที่ระบุสเปกชัดเจน
@@ -55,7 +59,7 @@
 - GUI รับ **สถานะที่ ESP ส่งกลับตามคำสั่ง** ไม่ได้วัดหน้าสัมผัสรีเลย์หรือตรวจว่าโหลดทำงานจริง
 - โปรโตคอลเดิมใช้ `DATA=0x05` เป็นคำสั่งถามสถานะด้วย จึงสั่งชุด CH1+CH3 ON เพียงสองช่องนี้ (bitmask `0x05`) ไม่ได้ และ GUI จะข้ามการอัปเดตเมื่อได้รับสถานะ `0x05`; ไม่ควรใช้สถานะนี้ในงานจริงจนกว่าทั้ง GUI และเฟิร์มแวร์จะได้รับการแก้ไขและทดสอบร่วมกัน
 - โค้ด ESP8266 ใช้ `0xFF` เป็นตัวบ่งชี้ EEPROM ว่าง จึงคืนค่าสถานะทุกช่อง ON หลังรีบูตไม่ได้ตามที่เขียนไว้ในตัวอย่างปัจจุบัน
-- โค้ด ESP32-C3 ใช้ `GPIO2` ซึ่งเป็น strapping pin; โค้ด ESP8266 ใช้ `GPIO0/2` ที่มีผลต่อการบูต ต้องทดสอบ power cycle พร้อมโมดูลจริง ESP32-C3 ที่ใช้ USB ภายในควรเปิด **USB CDC On Boot** ตาม [คำแนะนำ Espressif](https://docs.espressif.com/projects/arduino-esp32/en/latest/tutorials/cdc_dfu_flash.html); บอร์ดที่ใช้ USB-to-UART ภายนอกอาจมีขั้นตอนต่างกัน
+- ESP32-C3 เลี่ยง GPIO2/8/9 แล้ว; ESP8266 ยังใช้ GPIO0/2 เป็น CH4/CH5 ซึ่งต้อง HIGH ระหว่าง reset และอาจทำให้รีเลย์กระตุกตอนบูต ควรทดสอบ cold boot, reset และ flash พร้อมต่อโมดูลจริงด้วยโหลดแรงดันต่ำ ESP32-C3 ที่ใช้ USB ภายในควรเปิด **USB CDC On Boot** ตาม [คำแนะนำ Espressif](https://docs.espressif.com/projects/arduino-esp32/en/latest/tutorials/cdc_dfu_flash.html)
 
 ### การใช้งาน
 1. อัปโหลดโค้ด Arduino ลงในบอร์ด ESP32 (ดูโค้ดด้านล่าง)
@@ -81,7 +85,7 @@ The application sends ON/OFF commands to the ESP32 and displays its reported sta
 
 ### Actual relay hardware
 
-The pictured assembly uses **two 4-channel modules** for eight outputs. Each pictured relay is marked `SRD-05VDC-SL-C`, indicating a **5 V coil**. “3.3 V module” may describe a control-input rating; the module supply voltage and input compatibility cannot be confirmed from this photo alone. Verify the board documentation or measure the circuit before applying power. See the [Thai wiring map](#ฮาร์ดแวร์ที่ใช้จริง-โมดูลรีเลย์-4-ช่อง--2) and [project BOM](BOM.md).
+The pictured assembly uses **two 4-channel modules** for eight outputs. On ESP32-C3 SuperMini, CH1–CH7 use GPIO0,1,3–7 on one side and CH8 uses GPIO10 on the other side, skipping boot pin GPIO2. On ESP8266 NodeMCU/D1 mini, CH1–CH8 follow D0–D7 in board-label order; D3/GPIO0 and D4/GPIO2 remain boot-sensitive and must stay HIGH during reset. Test cold starts with the actual relay module. Each pictured relay is marked `SRD-05VDC-SL-C`, indicating a **5 V coil**. “3.3 V module” may describe a control-input rating; the module supply voltage and input compatibility cannot be confirmed from this photo alone. Verify the board documentation or measure the circuit before applying power. See the [Thai wiring map](#ฮาร์ดแวร์ที่ใช้จริง-โมดูลรีเลย์-4-ช่อง--2) and [project BOM](BOM.md).
 
 The GUI displays ESP-reported state, not measured contact state. This version reserves data value `0x05` for a status request, so CH1+CH3-only cannot be commanded. The firmware restores its last saved state after power returns. Check startup and contact behavior with a low-voltage test load before deploying.
 
@@ -191,13 +195,17 @@ note : USB CDC On Boot need to Enable
 ```cpp
 #include <Preferences.h>
 
-// ESP32-C3: ตรวจ GPIO2 (strapping pin) และผังขาของบอร์ดจริงก่อนต่อรีเลย์
-const int relayPins[] = {0, 1, 2, 3, 4, 5, 6, 7};
+// ESP32-C3 SuperMini: CH1..CH7 = GPIO0,1,3,4,5,6,7; CH8 = GPIO10.
+// Skip boot strapping GPIO2/8/9. Verify your board's pin labels.
+const int relayPins[] = {0, 1, 3, 4, 5, 6, 7, 10};
 byte currentRelayState = 0x00; 
 Preferences pref;
 
 const byte STX = 0x02;
 const byte ETX = 0x03;
+
+void updateRelays(byte state);
+void sendFeedback(byte state);
 
 void setup() {
   Serial.begin(115200);
@@ -205,9 +213,10 @@ void setup() {
   currentRelayState = pref.getUChar("state", 0x00);
 
   for (int i = 0; i < 8; i++) {
-    pinMode(relayPins[i], OUTPUT);
+    // Preset output latch before enabling output; this cannot change boot straps.
     bool bitValue = (currentRelayState >> i) & 0x01;
-    digitalWrite(relayPins[i], bitValue ? LOW : HIGH); 
+    digitalWrite(relayPins[i], bitValue ? LOW : HIGH);
+    pinMode(relayPins[i], OUTPUT);
   }
 }
 
@@ -257,12 +266,18 @@ void sendFeedback(byte state) {
 ```cpp
 #include <EEPROM.h>
 
-// ESP8266: ใช้ขา D0 - D7 ตามลำดับ (ห้ามใช้ D8)
+// ESP8266 NodeMCU/D1 mini: CH1..CH8 follow D0..D7 board labels.
+// D3/GPIO0 and D4/GPIO2 are boot pins: both MUST remain HIGH at reset.
+// Relay inputs must not pull either pin LOW before setup() runs.
+// D8/GPIO15 must remain LOW at boot; TX/RX GPIO1/3 are for USB Serial.
 const int relayPins[] = {16, 5, 4, 0, 2, 14, 12, 13}; 
 byte currentRelayState = 0x00; 
 
 const byte STX = 0x02;
 const byte ETX = 0x03;
+
+void updateRelays(byte state);
+void sendFeedback(byte state);
 
 void setup() {
   Serial.begin(115200);
@@ -277,9 +292,10 @@ void setup() {
   }
 
   for (int i = 0; i < 8; i++) {
-    pinMode(relayPins[i], OUTPUT);
+    // Preset output latch before enabling output; this cannot change boot straps.
     bool bitValue = (currentRelayState >> i) & 0x01;
-    digitalWrite(relayPins[i], bitValue ? LOW : HIGH); 
+    digitalWrite(relayPins[i], bitValue ? LOW : HIGH);
+    pinMode(relayPins[i], OUTPUT);
   }
 }
 
