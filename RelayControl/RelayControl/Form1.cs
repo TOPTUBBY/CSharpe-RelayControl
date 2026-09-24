@@ -69,10 +69,42 @@ namespace RelayControlApp
             }
         }
 
-        private void LoadAvailablePorts()
+        private void LoadAvailablePorts(string preferredPort = null)
         {
-            cmbPort.Items.AddRange(SerialPort.GetPortNames());
-            if (cmbPort.Items.Count > 0) cmbPort.SelectedIndex = 0;
+            string selection = preferredPort ?? cmbPort.SelectedItem as string;
+            string[] ports = SerialPort.GetPortNames();
+            Array.Sort(ports, StringComparer.OrdinalIgnoreCase);
+            cmbPort.Items.Clear();
+            cmbPort.Items.AddRange(ports);
+            if (selection != null && cmbPort.Items.Contains(selection))
+                cmbPort.SelectedItem = selection;
+            else if (cmbPort.Items.Count > 0)
+                cmbPort.SelectedIndex = 0;
+        }
+
+        private void btnRefreshPorts_Click(object sender, EventArgs e)
+        {
+            string preferredPort = serialPort1.IsOpen ? serialPort1.PortName : cmbPort.SelectedItem as string;
+            try
+            {
+                // Close a stale session so the same COM port can be reopened after a USB reconnect.
+                if (serialPort1.IsOpen)
+                {
+                    serialPort1.Close();
+                    AddStatusLog("Serial connection closed for port refresh.");
+                }
+
+                btnConnect.Text = "Connect";
+                btnConnect.BackColor = Color.LightGreen;
+                LoadAvailablePorts(preferredPort);
+                AddStatusLog(cmbPort.Items.Count == 0
+                    ? "No serial ports found. Reconnect the controller and refresh again."
+                    : "Ports refreshed: " + string.Join(", ", SerialPort.GetPortNames()));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Unable to refresh serial ports", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void btnConnect_Click(object sender, EventArgs e)
