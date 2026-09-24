@@ -1,37 +1,28 @@
-﻿namespace RelayControlApp
+namespace RelayControlApp
 {
     partial class Form1
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
+            if (disposing && (components != null)) components.Dispose();
             base.Dispose(disposing);
         }
 
         #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            this.grpConnection = new System.Windows.Forms.GroupBox();
+            this.lblPort = new System.Windows.Forms.Label();
             this.cmbPort = new System.Windows.Forms.ComboBox();
             this.btnConnect = new System.Windows.Forms.Button();
+            this.lblSerialSettings = new System.Windows.Forms.Label();
+            this.lblProtocol = new System.Windows.Forms.Label();
+            this.lblProtocolNote = new System.Windows.Forms.Label();
+            this.grpRelays = new System.Windows.Forms.GroupBox();
             this.chkRelay1 = new System.Windows.Forms.CheckBox();
             this.chkRelay2 = new System.Windows.Forms.CheckBox();
             this.chkRelay3 = new System.Windows.Forms.CheckBox();
@@ -40,184 +31,377 @@
             this.chkRelay6 = new System.Windows.Forms.CheckBox();
             this.chkRelay7 = new System.Windows.Forms.CheckBox();
             this.chkRelay8 = new System.Windows.Forms.CheckBox();
-            this.serialPort1 = new System.IO.Ports.SerialPort(this.components);
+            this.lblRelayHint = new System.Windows.Forms.Label();
+            this.grpLog = new System.Windows.Forms.GroupBox();
             this.lstStatus = new System.Windows.Forms.ListBox();
+            this.lblFooter = new System.Windows.Forms.Label();
             this.lblAbout = new System.Windows.Forms.Label();
+            this.serialPort1 = new System.IO.Ports.SerialPort(this.components);
+            this.grpConnection.SuspendLayout();
+            this.grpRelays.SuspendLayout();
+            this.grpLog.SuspendLayout();
             this.SuspendLayout();
-            // 
+            //
+            // grpConnection
+            //
+            this.grpConnection.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpConnection.Controls.Add(this.lblPort);
+            this.grpConnection.Controls.Add(this.cmbPort);
+            this.grpConnection.Controls.Add(this.btnConnect);
+            this.grpConnection.Controls.Add(this.lblSerialSettings);
+            this.grpConnection.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.grpConnection.Location = new System.Drawing.Point(16, 14);
+            this.grpConnection.Name = "grpConnection";
+            this.grpConnection.Size = new System.Drawing.Size(1012, 90);
+            this.grpConnection.TabIndex = 0;
+            this.grpConnection.TabStop = false;
+            this.grpConnection.Text = "Serial Connection";
+            //
+            // lblPort
+            //
+            this.lblPort.AutoSize = true;
+            this.lblPort.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblPort.Location = new System.Drawing.Point(20, 39);
+            this.lblPort.Name = "lblPort";
+            this.lblPort.Size = new System.Drawing.Size(32, 15);
+            this.lblPort.TabIndex = 0;
+            this.lblPort.Text = "Port:";
+            //
             // cmbPort
-            // 
+            //
+            this.cmbPort.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbPort.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.cmbPort.FormattingEnabled = true;
-            this.cmbPort.Location = new System.Drawing.Point(12, 12);
+            this.cmbPort.Location = new System.Drawing.Point(65, 34);
             this.cmbPort.Name = "cmbPort";
-            this.cmbPort.Size = new System.Drawing.Size(71, 21);
+            this.cmbPort.Size = new System.Drawing.Size(143, 25);
             this.cmbPort.TabIndex = 0;
-            // 
+            //
             // btnConnect
-            // 
+            //
             this.btnConnect.BackColor = System.Drawing.Color.LightGreen;
-            this.btnConnect.Location = new System.Drawing.Point(89, 10);
+            this.btnConnect.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnConnect.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnConnect.Location = new System.Drawing.Point(226, 29);
             this.btnConnect.Name = "btnConnect";
-            this.btnConnect.Size = new System.Drawing.Size(194, 23);
+            this.btnConnect.Size = new System.Drawing.Size(130, 35);
             this.btnConnect.TabIndex = 1;
             this.btnConnect.Text = "Connect";
             this.btnConnect.UseVisualStyleBackColor = false;
             this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
-            // 
+            //
+            // lblSerialSettings
+            //
+            this.lblSerialSettings.AutoSize = true;
+            this.lblSerialSettings.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblSerialSettings.ForeColor = System.Drawing.Color.DimGray;
+            this.lblSerialSettings.Location = new System.Drawing.Point(378, 39);
+            this.lblSerialSettings.Name = "lblSerialSettings";
+            this.lblSerialSettings.Size = new System.Drawing.Size(193, 15);
+            this.lblSerialSettings.TabIndex = 3;
+            this.lblSerialSettings.Text = "115200 baud  |  8 data bits  |  1 stop bit";
+            //
+            // lblProtocol
+            //
+            this.lblProtocol.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblProtocol.AutoEllipsis = true;
+            this.lblProtocol.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblProtocol.Location = new System.Drawing.Point(20, 116);
+            this.lblProtocol.Name = "lblProtocol";
+            this.lblProtocol.Size = new System.Drawing.Size(1004, 21);
+            this.lblProtocol.TabIndex = 1;
+            this.lblProtocol.Text = "Protocol:  [STX 02] [DATA] [CHECKSUM = DATA XOR FF] [ETX 03]     Status request: 02 05 FA 03";
+            //
+            // lblProtocolNote
+            //
+            this.lblProtocolNote.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblProtocolNote.AutoEllipsis = true;
+            this.lblProtocolNote.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblProtocolNote.ForeColor = System.Drawing.Color.FromArgb(150, 72, 20);
+            this.lblProtocolNote.Location = new System.Drawing.Point(20, 138);
+            this.lblProtocolNote.Name = "lblProtocolNote";
+            this.lblProtocolNote.Size = new System.Drawing.Size(1004, 21);
+            this.lblProtocolNote.TabIndex = 2;
+            this.lblProtocolNote.Text = "Note: DATA 0x05 is reserved for status; the exact CH1 + CH3 combination cannot be commanded with this protocol.";
+            //
+            // grpRelays
+            //
+            this.grpRelays.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpRelays.Controls.Add(this.chkRelay1);
+            this.grpRelays.Controls.Add(this.chkRelay2);
+            this.grpRelays.Controls.Add(this.chkRelay3);
+            this.grpRelays.Controls.Add(this.chkRelay4);
+            this.grpRelays.Controls.Add(this.chkRelay5);
+            this.grpRelays.Controls.Add(this.chkRelay6);
+            this.grpRelays.Controls.Add(this.chkRelay7);
+            this.grpRelays.Controls.Add(this.chkRelay8);
+            this.grpRelays.Controls.Add(this.lblRelayHint);
+            this.grpRelays.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.grpRelays.Location = new System.Drawing.Point(16, 167);
+            this.grpRelays.Name = "grpRelays";
+            this.grpRelays.Size = new System.Drawing.Size(1012, 260);
+            this.grpRelays.TabIndex = 3;
+            this.grpRelays.TabStop = false;
+            this.grpRelays.Text = "Relay Channels";
+            //
             // chkRelay1
-            // 
-            this.chkRelay1.AutoSize = true;
-            this.chkRelay1.Location = new System.Drawing.Point(12, 49);
+            //
+            this.chkRelay1.Appearance = System.Windows.Forms.Appearance.Button;
+            this.chkRelay1.BackColor = System.Drawing.Color.White;
+            this.chkRelay1.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
+            this.chkRelay1.FlatAppearance.BorderSize = 2;
+            this.chkRelay1.FlatAppearance.CheckedBackColor = System.Drawing.Color.LightGreen;
+            this.chkRelay1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkRelay1.Font = new System.Drawing.Font("Segoe UI", 13F, System.Drawing.FontStyle.Bold);
+            this.chkRelay1.Location = new System.Drawing.Point(18, 31);
             this.chkRelay1.Name = "chkRelay1";
-            this.chkRelay1.Size = new System.Drawing.Size(47, 17);
-            this.chkRelay1.TabIndex = 2;
+            this.chkRelay1.Size = new System.Drawing.Size(235, 69);
+            this.chkRelay1.TabIndex = 1;
             this.chkRelay1.Tag = "0";
             this.chkRelay1.Text = "CH1";
-            this.chkRelay1.UseVisualStyleBackColor = true;
+            this.chkRelay1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.chkRelay1.UseVisualStyleBackColor = false;
             this.chkRelay1.CheckedChanged += new System.EventHandler(this.Relay_CheckedChanged);
-            // 
+            //
             // chkRelay2
-            // 
-            this.chkRelay2.AutoSize = true;
-            this.chkRelay2.Location = new System.Drawing.Point(12, 72);
+            //
+            this.chkRelay2.Appearance = System.Windows.Forms.Appearance.Button;
+            this.chkRelay2.BackColor = System.Drawing.Color.White;
+            this.chkRelay2.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
+            this.chkRelay2.FlatAppearance.BorderSize = 2;
+            this.chkRelay2.FlatAppearance.CheckedBackColor = System.Drawing.Color.LightGreen;
+            this.chkRelay2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkRelay2.Font = new System.Drawing.Font("Segoe UI", 13F, System.Drawing.FontStyle.Bold);
+            this.chkRelay2.Location = new System.Drawing.Point(264, 31);
             this.chkRelay2.Name = "chkRelay2";
-            this.chkRelay2.Size = new System.Drawing.Size(47, 17);
+            this.chkRelay2.Size = new System.Drawing.Size(235, 69);
             this.chkRelay2.TabIndex = 2;
             this.chkRelay2.Tag = "1";
             this.chkRelay2.Text = "CH2";
-            this.chkRelay2.UseVisualStyleBackColor = true;
+            this.chkRelay2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.chkRelay2.UseVisualStyleBackColor = false;
             this.chkRelay2.CheckedChanged += new System.EventHandler(this.Relay_CheckedChanged);
-            // 
+            //
             // chkRelay3
-            // 
-            this.chkRelay3.AutoSize = true;
-            this.chkRelay3.Location = new System.Drawing.Point(12, 95);
+            //
+            this.chkRelay3.Appearance = System.Windows.Forms.Appearance.Button;
+            this.chkRelay3.BackColor = System.Drawing.Color.White;
+            this.chkRelay3.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
+            this.chkRelay3.FlatAppearance.BorderSize = 2;
+            this.chkRelay3.FlatAppearance.CheckedBackColor = System.Drawing.Color.LightGreen;
+            this.chkRelay3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkRelay3.Font = new System.Drawing.Font("Segoe UI", 13F, System.Drawing.FontStyle.Bold);
+            this.chkRelay3.Location = new System.Drawing.Point(510, 31);
             this.chkRelay3.Name = "chkRelay3";
-            this.chkRelay3.Size = new System.Drawing.Size(47, 17);
-            this.chkRelay3.TabIndex = 2;
+            this.chkRelay3.Size = new System.Drawing.Size(235, 69);
+            this.chkRelay3.TabIndex = 3;
             this.chkRelay3.Tag = "2";
             this.chkRelay3.Text = "CH3";
-            this.chkRelay3.UseVisualStyleBackColor = true;
+            this.chkRelay3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.chkRelay3.UseVisualStyleBackColor = false;
             this.chkRelay3.CheckedChanged += new System.EventHandler(this.Relay_CheckedChanged);
-            // 
+            //
             // chkRelay4
-            // 
-            this.chkRelay4.AutoSize = true;
-            this.chkRelay4.Location = new System.Drawing.Point(12, 118);
+            //
+            this.chkRelay4.Appearance = System.Windows.Forms.Appearance.Button;
+            this.chkRelay4.BackColor = System.Drawing.Color.White;
+            this.chkRelay4.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
+            this.chkRelay4.FlatAppearance.BorderSize = 2;
+            this.chkRelay4.FlatAppearance.CheckedBackColor = System.Drawing.Color.LightGreen;
+            this.chkRelay4.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkRelay4.Font = new System.Drawing.Font("Segoe UI", 13F, System.Drawing.FontStyle.Bold);
+            this.chkRelay4.Location = new System.Drawing.Point(756, 31);
             this.chkRelay4.Name = "chkRelay4";
-            this.chkRelay4.Size = new System.Drawing.Size(47, 17);
-            this.chkRelay4.TabIndex = 2;
+            this.chkRelay4.Size = new System.Drawing.Size(235, 69);
+            this.chkRelay4.TabIndex = 4;
             this.chkRelay4.Tag = "3";
             this.chkRelay4.Text = "CH4";
-            this.chkRelay4.UseVisualStyleBackColor = true;
+            this.chkRelay4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.chkRelay4.UseVisualStyleBackColor = false;
             this.chkRelay4.CheckedChanged += new System.EventHandler(this.Relay_CheckedChanged);
-            // 
+            //
             // chkRelay5
-            // 
-            this.chkRelay5.AutoSize = true;
-            this.chkRelay5.Location = new System.Drawing.Point(12, 141);
+            //
+            this.chkRelay5.Appearance = System.Windows.Forms.Appearance.Button;
+            this.chkRelay5.BackColor = System.Drawing.Color.White;
+            this.chkRelay5.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
+            this.chkRelay5.FlatAppearance.BorderSize = 2;
+            this.chkRelay5.FlatAppearance.CheckedBackColor = System.Drawing.Color.LightGreen;
+            this.chkRelay5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkRelay5.Font = new System.Drawing.Font("Segoe UI", 13F, System.Drawing.FontStyle.Bold);
+            this.chkRelay5.Location = new System.Drawing.Point(18, 115);
             this.chkRelay5.Name = "chkRelay5";
-            this.chkRelay5.Size = new System.Drawing.Size(47, 17);
-            this.chkRelay5.TabIndex = 2;
+            this.chkRelay5.Size = new System.Drawing.Size(235, 69);
+            this.chkRelay5.TabIndex = 5;
             this.chkRelay5.Tag = "4";
             this.chkRelay5.Text = "CH5";
-            this.chkRelay5.UseVisualStyleBackColor = true;
+            this.chkRelay5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.chkRelay5.UseVisualStyleBackColor = false;
             this.chkRelay5.CheckedChanged += new System.EventHandler(this.Relay_CheckedChanged);
-            // 
+            //
             // chkRelay6
-            // 
-            this.chkRelay6.AutoSize = true;
-            this.chkRelay6.Location = new System.Drawing.Point(12, 164);
+            //
+            this.chkRelay6.Appearance = System.Windows.Forms.Appearance.Button;
+            this.chkRelay6.BackColor = System.Drawing.Color.White;
+            this.chkRelay6.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
+            this.chkRelay6.FlatAppearance.BorderSize = 2;
+            this.chkRelay6.FlatAppearance.CheckedBackColor = System.Drawing.Color.LightGreen;
+            this.chkRelay6.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkRelay6.Font = new System.Drawing.Font("Segoe UI", 13F, System.Drawing.FontStyle.Bold);
+            this.chkRelay6.Location = new System.Drawing.Point(264, 115);
             this.chkRelay6.Name = "chkRelay6";
-            this.chkRelay6.Size = new System.Drawing.Size(47, 17);
-            this.chkRelay6.TabIndex = 2;
+            this.chkRelay6.Size = new System.Drawing.Size(235, 69);
+            this.chkRelay6.TabIndex = 6;
             this.chkRelay6.Tag = "5";
             this.chkRelay6.Text = "CH6";
-            this.chkRelay6.UseVisualStyleBackColor = true;
+            this.chkRelay6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.chkRelay6.UseVisualStyleBackColor = false;
             this.chkRelay6.CheckedChanged += new System.EventHandler(this.Relay_CheckedChanged);
-            // 
+            //
             // chkRelay7
-            // 
-            this.chkRelay7.AutoSize = true;
-            this.chkRelay7.Location = new System.Drawing.Point(12, 187);
+            //
+            this.chkRelay7.Appearance = System.Windows.Forms.Appearance.Button;
+            this.chkRelay7.BackColor = System.Drawing.Color.White;
+            this.chkRelay7.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
+            this.chkRelay7.FlatAppearance.BorderSize = 2;
+            this.chkRelay7.FlatAppearance.CheckedBackColor = System.Drawing.Color.LightGreen;
+            this.chkRelay7.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkRelay7.Font = new System.Drawing.Font("Segoe UI", 13F, System.Drawing.FontStyle.Bold);
+            this.chkRelay7.Location = new System.Drawing.Point(510, 115);
             this.chkRelay7.Name = "chkRelay7";
-            this.chkRelay7.Size = new System.Drawing.Size(47, 17);
-            this.chkRelay7.TabIndex = 2;
+            this.chkRelay7.Size = new System.Drawing.Size(235, 69);
+            this.chkRelay7.TabIndex = 7;
             this.chkRelay7.Tag = "6";
             this.chkRelay7.Text = "CH7";
-            this.chkRelay7.UseVisualStyleBackColor = true;
+            this.chkRelay7.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.chkRelay7.UseVisualStyleBackColor = false;
             this.chkRelay7.CheckedChanged += new System.EventHandler(this.Relay_CheckedChanged);
-            // 
+            //
             // chkRelay8
-            // 
-            this.chkRelay8.AutoSize = true;
-            this.chkRelay8.Location = new System.Drawing.Point(12, 210);
+            //
+            this.chkRelay8.Appearance = System.Windows.Forms.Appearance.Button;
+            this.chkRelay8.BackColor = System.Drawing.Color.White;
+            this.chkRelay8.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
+            this.chkRelay8.FlatAppearance.BorderSize = 2;
+            this.chkRelay8.FlatAppearance.CheckedBackColor = System.Drawing.Color.LightGreen;
+            this.chkRelay8.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkRelay8.Font = new System.Drawing.Font("Segoe UI", 13F, System.Drawing.FontStyle.Bold);
+            this.chkRelay8.Location = new System.Drawing.Point(756, 115);
             this.chkRelay8.Name = "chkRelay8";
-            this.chkRelay8.Size = new System.Drawing.Size(47, 17);
-            this.chkRelay8.TabIndex = 2;
+            this.chkRelay8.Size = new System.Drawing.Size(235, 69);
+            this.chkRelay8.TabIndex = 8;
             this.chkRelay8.Tag = "7";
             this.chkRelay8.Text = "CH8";
-            this.chkRelay8.UseVisualStyleBackColor = true;
+            this.chkRelay8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.chkRelay8.UseVisualStyleBackColor = false;
             this.chkRelay8.CheckedChanged += new System.EventHandler(this.Relay_CheckedChanged);
-            // 
-            // serialPort1
-            // 
-            this.serialPort1.BaudRate = 115200;
-            this.serialPort1.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(this.serialPort1_DataReceived);
-            // 
+            //
+            // lblRelayHint
+            //
+            this.lblRelayHint.AutoSize = true;
+            this.lblRelayHint.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblRelayHint.ForeColor = System.Drawing.Color.DimGray;
+            this.lblRelayHint.Location = new System.Drawing.Point(19, 211);
+            this.lblRelayHint.Name = "lblRelayHint";
+            this.lblRelayHint.Size = new System.Drawing.Size(351, 15);
+            this.lblRelayHint.TabIndex = 9;
+            this.lblRelayHint.Text = "Green / pressed = ON     White = OFF     Connect before switching";
+            //
+            // grpLog
+            //
+            this.grpLog.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpLog.Controls.Add(this.lstStatus);
+            this.grpLog.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.grpLog.Location = new System.Drawing.Point(16, 440);
+            this.grpLog.Name = "grpLog";
+            this.grpLog.Size = new System.Drawing.Size(1012, 236);
+            this.grpLog.TabIndex = 4;
+            this.grpLog.TabStop = false;
+            this.grpLog.Text = "Communication Log";
+            //
             // lstStatus
-            // 
+            //
+            this.lstStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
+            this.lstStatus.BackColor = System.Drawing.Color.FromArgb(25, 29, 34);
+            this.lstStatus.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.lstStatus.Font = new System.Drawing.Font("Consolas", 9F);
+            this.lstStatus.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.lstStatus.FormattingEnabled = true;
-            this.lstStatus.Location = new System.Drawing.Point(65, 49);
+            this.lstStatus.ItemHeight = 14;
+            this.lstStatus.Location = new System.Drawing.Point(11, 24);
             this.lstStatus.Name = "lstStatus";
-            this.lstStatus.Size = new System.Drawing.Size(218, 186);
-            this.lstStatus.TabIndex = 3;
-            // 
+            this.lstStatus.Size = new System.Drawing.Size(990, 196);
+            this.lstStatus.TabIndex = 0;
+            //
+            // lblFooter
+            //
+            this.lblFooter.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblFooter.AutoEllipsis = true;
+            this.lblFooter.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblFooter.ForeColor = System.Drawing.Color.DimGray;
+            this.lblFooter.Location = new System.Drawing.Point(19, 690);
+            this.lblFooter.Name = "lblFooter";
+            this.lblFooter.Size = new System.Drawing.Size(916, 22);
+            this.lblFooter.TabIndex = 5;
+            this.lblFooter.Text = "Relay Control 8CH   |   USB serial connection   |   See the log for sent commands and status feedback";
+            //
             // lblAbout
-            // 
+            //
+            this.lblAbout.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.lblAbout.AutoSize = true;
             this.lblAbout.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.lblAbout.ForeColor = System.Drawing.Color.Blue;
-            this.lblAbout.Location = new System.Drawing.Point(248, 238);
-            this.lblAbout.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.lblAbout.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Underline);
+            this.lblAbout.ForeColor = System.Drawing.Color.RoyalBlue;
+            this.lblAbout.Location = new System.Drawing.Point(982, 690);
             this.lblAbout.Name = "lblAbout";
-            this.lblAbout.Size = new System.Drawing.Size(35, 13);
-            this.lblAbout.TabIndex = 10;
+            this.lblAbout.Size = new System.Drawing.Size(38, 15);
+            this.lblAbout.TabIndex = 6;
             this.lblAbout.Text = "About";
             this.lblAbout.Click += new System.EventHandler(this.lblAbout_Click);
-            // 
+            //
+            // serialPort1
+            //
+            this.serialPort1.BaudRate = 115200;
+            this.serialPort1.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(this.serialPort1_DataReceived);
+            //
             // Form1
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            //
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(296, 256);
+            this.BackColor = System.Drawing.Color.FromArgb(248, 249, 251);
+            this.ClientSize = new System.Drawing.Size(1044, 724);
+            this.Controls.Add(this.grpConnection);
+            this.Controls.Add(this.lblProtocol);
+            this.Controls.Add(this.lblProtocolNote);
+            this.Controls.Add(this.grpRelays);
+            this.Controls.Add(this.grpLog);
+            this.Controls.Add(this.lblFooter);
             this.Controls.Add(this.lblAbout);
-            this.Controls.Add(this.lstStatus);
-            this.Controls.Add(this.chkRelay8);
-            this.Controls.Add(this.chkRelay7);
-            this.Controls.Add(this.chkRelay6);
-            this.Controls.Add(this.chkRelay5);
-            this.Controls.Add(this.chkRelay4);
-            this.Controls.Add(this.chkRelay3);
-            this.Controls.Add(this.chkRelay2);
-            this.Controls.Add(this.chkRelay1);
-            this.Controls.Add(this.btnConnect);
-            this.Controls.Add(this.cmbPort);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
+            this.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "RELAY CONTROL v1.1";
+            this.Text = "Relay Control 8CH";
+            this.grpConnection.ResumeLayout(false);
+            this.grpConnection.PerformLayout();
+            this.grpRelays.ResumeLayout(false);
+            this.grpRelays.PerformLayout();
+            this.grpLog.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
-
         #endregion
 
+        private System.Windows.Forms.GroupBox grpConnection;
+        private System.Windows.Forms.Label lblPort;
         private System.Windows.Forms.ComboBox cmbPort;
         private System.Windows.Forms.Button btnConnect;
+        private System.Windows.Forms.Label lblSerialSettings;
+        private System.Windows.Forms.Label lblProtocol;
+        private System.Windows.Forms.Label lblProtocolNote;
+        private System.Windows.Forms.GroupBox grpRelays;
         private System.Windows.Forms.CheckBox chkRelay1;
         private System.Windows.Forms.CheckBox chkRelay2;
         private System.Windows.Forms.CheckBox chkRelay3;
@@ -226,9 +410,11 @@
         private System.Windows.Forms.CheckBox chkRelay6;
         private System.Windows.Forms.CheckBox chkRelay7;
         private System.Windows.Forms.CheckBox chkRelay8;
-        private System.IO.Ports.SerialPort serialPort1;
+        private System.Windows.Forms.Label lblRelayHint;
+        private System.Windows.Forms.GroupBox grpLog;
         private System.Windows.Forms.ListBox lstStatus;
+        private System.Windows.Forms.Label lblFooter;
         private System.Windows.Forms.Label lblAbout;
+        private System.IO.Ports.SerialPort serialPort1;
     }
 }
-
