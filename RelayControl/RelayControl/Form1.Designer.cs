@@ -18,6 +18,7 @@ namespace RelayControlApp
             this.grpConnection = new System.Windows.Forms.GroupBox();
             this.lblPort = new System.Windows.Forms.Label();
             this.cmbPort = new System.Windows.Forms.ComboBox();
+            this.btnRefreshPorts = new System.Windows.Forms.Button();
             this.btnConnect = new System.Windows.Forms.Button();
             this.lblSerialSettings = new System.Windows.Forms.Label();
             this.lblProtocol = new System.Windows.Forms.Label();
@@ -49,6 +50,7 @@ namespace RelayControlApp
             this.grpConnection.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             this.grpConnection.Controls.Add(this.lblPort);
             this.grpConnection.Controls.Add(this.cmbPort);
+            this.grpConnection.Controls.Add(this.btnRefreshPorts);
             this.grpConnection.Controls.Add(this.btnConnect);
             this.grpConnection.Controls.Add(this.lblSerialSettings);
             this.grpConnection.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
@@ -79,15 +81,28 @@ namespace RelayControlApp
             this.cmbPort.Size = new System.Drawing.Size(143, 25);
             this.cmbPort.TabIndex = 0;
             //
+            // btnRefreshPorts
+            //
+            this.btnRefreshPorts.BackColor = System.Drawing.Color.White;
+            this.btnRefreshPorts.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRefreshPorts.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btnRefreshPorts.Location = new System.Drawing.Point(226, 29);
+            this.btnRefreshPorts.Name = "btnRefreshPorts";
+            this.btnRefreshPorts.Size = new System.Drawing.Size(90, 35);
+            this.btnRefreshPorts.TabIndex = 1;
+            this.btnRefreshPorts.Text = "Refresh";
+            this.btnRefreshPorts.UseVisualStyleBackColor = false;
+            this.btnRefreshPorts.Click += new System.EventHandler(this.btnRefreshPorts_Click);
+            //
             // btnConnect
             //
             this.btnConnect.BackColor = System.Drawing.Color.LightGreen;
             this.btnConnect.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnConnect.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.btnConnect.Location = new System.Drawing.Point(226, 29);
+            this.btnConnect.Location = new System.Drawing.Point(329, 29);
             this.btnConnect.Name = "btnConnect";
             this.btnConnect.Size = new System.Drawing.Size(130, 35);
-            this.btnConnect.TabIndex = 1;
+            this.btnConnect.TabIndex = 2;
             this.btnConnect.Text = "Connect";
             this.btnConnect.UseVisualStyleBackColor = false;
             this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
@@ -97,7 +112,7 @@ namespace RelayControlApp
             this.lblSerialSettings.AutoSize = true;
             this.lblSerialSettings.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.lblSerialSettings.ForeColor = System.Drawing.Color.DimGray;
-            this.lblSerialSettings.Location = new System.Drawing.Point(378, 39);
+            this.lblSerialSettings.Location = new System.Drawing.Point(479, 39);
             this.lblSerialSettings.Name = "lblSerialSettings";
             this.lblSerialSettings.Size = new System.Drawing.Size(193, 15);
             this.lblSerialSettings.TabIndex = 3;
@@ -427,6 +442,7 @@ namespace RelayControlApp
         private System.Windows.Forms.GroupBox grpConnection;
         private System.Windows.Forms.Label lblPort;
         private System.Windows.Forms.ComboBox cmbPort;
+        private System.Windows.Forms.Button btnRefreshPorts;
         private System.Windows.Forms.Button btnConnect;
         private System.Windows.Forms.Label lblSerialSettings;
         private System.Windows.Forms.Label lblProtocol;
