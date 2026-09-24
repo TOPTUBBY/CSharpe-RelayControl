@@ -83,7 +83,6 @@ namespace RelayControlApp
                 {
                     serialPort1.PortName = cmbPort.Text;
                     serialPort1.BaudRate = 115200;
-                    serialPort1.DataReceived += serialPort1_DataReceived;
                     serialPort1.Open();
                     serialPort1.DtrEnable = false;
                     serialPort1.RtsEnable = false;
@@ -102,7 +101,6 @@ namespace RelayControlApp
                 }
                 else
                 {
-                    serialPort1.DataReceived -= serialPort1_DataReceived;
                     serialPort1.DtrEnable = false;
                     serialPort1.RtsEnable = false;
                     System.Threading.Thread.Sleep(100);
@@ -126,6 +124,35 @@ namespace RelayControlApp
             else currentStatus &= (byte)~(1 << index);
 
             SendProtocolFrame(currentStatus);
+        }
+
+        private void btnAllOn_Click(object sender, EventArgs e)
+        {
+            SetAllRelays(0xFF);
+        }
+
+        private void btnAllOff_Click(object sender, EventArgs e)
+        {
+            SetAllRelays(0x00);
+        }
+
+        private void SetAllRelays(byte status)
+        {
+            if (!serialPort1.IsOpen)
+            {
+                AddStatusLog("Connect to a serial port before switching relays.");
+                return;
+            }
+
+            try
+            {
+                SendProtocolFrame(status);
+                UpdateUIStatus(status);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Relay command failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void SendProtocolFrame(byte data)
