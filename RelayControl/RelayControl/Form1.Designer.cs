@@ -31,6 +31,8 @@ namespace RelayControlApp
             this.chkRelay6 = new System.Windows.Forms.CheckBox();
             this.chkRelay7 = new System.Windows.Forms.CheckBox();
             this.chkRelay8 = new System.Windows.Forms.CheckBox();
+            this.btnAllOff = new System.Windows.Forms.Button();
+            this.btnAllOn = new System.Windows.Forms.Button();
             this.lblRelayHint = new System.Windows.Forms.Label();
             this.grpLog = new System.Windows.Forms.GroupBox();
             this.lstStatus = new System.Windows.Forms.ListBox();
@@ -135,6 +137,8 @@ namespace RelayControlApp
             this.grpRelays.Controls.Add(this.chkRelay6);
             this.grpRelays.Controls.Add(this.chkRelay7);
             this.grpRelays.Controls.Add(this.chkRelay8);
+            this.grpRelays.Controls.Add(this.btnAllOff);
+            this.grpRelays.Controls.Add(this.btnAllOn);
             this.grpRelays.Controls.Add(this.lblRelayHint);
             this.grpRelays.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.grpRelays.Location = new System.Drawing.Point(16, 167);
@@ -296,15 +300,41 @@ namespace RelayControlApp
             this.chkRelay8.UseVisualStyleBackColor = false;
             this.chkRelay8.CheckedChanged += new System.EventHandler(this.Relay_CheckedChanged);
             //
+            // btnAllOff
+            //
+            this.btnAllOff.BackColor = System.Drawing.Color.White;
+            this.btnAllOff.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAllOff.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnAllOff.Location = new System.Drawing.Point(18, 203);
+            this.btnAllOff.Name = "btnAllOff";
+            this.btnAllOff.Size = new System.Drawing.Size(108, 34);
+            this.btnAllOff.TabIndex = 9;
+            this.btnAllOff.Text = "ALL OFF";
+            this.btnAllOff.UseVisualStyleBackColor = false;
+            this.btnAllOff.Click += new System.EventHandler(this.btnAllOff_Click);
+            //
+            // btnAllOn
+            //
+            this.btnAllOn.BackColor = System.Drawing.Color.LightGreen;
+            this.btnAllOn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAllOn.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnAllOn.Location = new System.Drawing.Point(139, 203);
+            this.btnAllOn.Name = "btnAllOn";
+            this.btnAllOn.Size = new System.Drawing.Size(108, 34);
+            this.btnAllOn.TabIndex = 10;
+            this.btnAllOn.Text = "ALL ON";
+            this.btnAllOn.UseVisualStyleBackColor = false;
+            this.btnAllOn.Click += new System.EventHandler(this.btnAllOn_Click);
+            //
             // lblRelayHint
             //
             this.lblRelayHint.AutoSize = true;
             this.lblRelayHint.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.lblRelayHint.ForeColor = System.Drawing.Color.DimGray;
-            this.lblRelayHint.Location = new System.Drawing.Point(19, 211);
+            this.lblRelayHint.Location = new System.Drawing.Point(270, 213);
             this.lblRelayHint.Name = "lblRelayHint";
             this.lblRelayHint.Size = new System.Drawing.Size(351, 15);
-            this.lblRelayHint.TabIndex = 9;
+            this.lblRelayHint.TabIndex = 11;
             this.lblRelayHint.Text = "Green / pressed = ON     White = OFF     Connect before switching";
             //
             // grpLog
@@ -410,6 +440,8 @@ namespace RelayControlApp
         private System.Windows.Forms.CheckBox chkRelay6;
         private System.Windows.Forms.CheckBox chkRelay7;
         private System.Windows.Forms.CheckBox chkRelay8;
+        private System.Windows.Forms.Button btnAllOff;
+        private System.Windows.Forms.Button btnAllOn;
         private System.Windows.Forms.Label lblRelayHint;
         private System.Windows.Forms.GroupBox grpLog;
         private System.Windows.Forms.ListBox lstStatus;
