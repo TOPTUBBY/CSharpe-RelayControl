@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <driver/gpio.h>
 
 // ESP32-C3 SuperMini: CH1..CH7 = GPIO0,1,3,4,5,6,7; CH8 = GPIO10.
 // Skip boot strapping GPIO2/8/9. Verify your board's pin labels.
@@ -28,9 +29,11 @@ void setup() {
   currentRelayState = 0x00;
 
   for (int i = 0; i < 8; i++) {
-    // Set the OFF level before enabling output, regardless of module polarity.
-    digitalWrite(relayPins[i], RELAY_OFF_LEVEL);
-    pinMode(relayPins[i], OUTPUT);
+    // Preload the OFF level before enabling the output driver. Arduino's
+    // digitalWrite() is documented for pins already configured as OUTPUT.
+    const gpio_num_t pin = static_cast<gpio_num_t>(relayPins[i]);
+    gpio_set_level(pin, RELAY_OFF_LEVEL);
+    gpio_set_direction(pin, GPIO_MODE_OUTPUT);
   }
   Serial.begin(115200);
 }
