@@ -72,7 +72,9 @@ void updateRelays(byte state) {
   
   for (int i = 0; i < 8; i++) {
     bool bitValue = (state >> i) & 0x01;
-    digitalWrite(relayPins[i], bitValue ? RELAY_ON_LEVEL : RELAY_OFF_LEVEL);
+    // setup() configured this pin through ESP-IDF, so keep writes on that API.
+    gpio_set_level(static_cast<gpio_num_t>(relayPins[i]),
+                   bitValue ? RELAY_ON_LEVEL : RELAY_OFF_LEVEL);
   }
 }
 
