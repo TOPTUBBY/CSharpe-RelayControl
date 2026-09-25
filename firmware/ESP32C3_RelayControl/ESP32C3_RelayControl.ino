@@ -8,6 +8,11 @@ Preferences pref;
 
 const byte STX = 0x02;
 const byte ETX = 0x03;
+const byte CMD_SET = 0x01;
+const byte CMD_GET = 0x02;
+const byte CMD_STATUS = 0x81;
+byte rxFrame[5];
+byte rxCount = 0;
 
 void updateRelays(byte state);
 void sendFeedback(byte state);
@@ -26,24 +31,30 @@ void setup() {
 }
 
 void loop() {
-  if (Serial.available() >= 4) {
-    if (Serial.peek() == STX) {
-      Serial.read(); // เคลียร์ STX 
-      byte data = Serial.read();
-      byte checksum = Serial.read();
-      byte stopByte = Serial.read();
+  while (Serial.available() > 0) {
+    byte incoming = (byte)Serial.read();
+    if (rxCount == 0 && incoming != STX) continue;
+    rxFrame[rxCount++] = incoming;
+    if (rxCount < sizeof(rxFrame)) continue;
 
-      // ตรวจสอบ XOR Checksum
-      if (((data ^ checksum) == 0xFF) && (stopByte == ETX)) {
-        if (data == 0x05) {
-          sendFeedback(currentRelayState);
-        } else {
-          updateRelays(data);
-          sendFeedback(data);
-        }
+    byte cmd = rxFrame[1];
+    byte data = rxFrame[2];
+    if (rxFrame[4] == ETX && rxFrame[3] == (byte)(0xFF ^ cmd ^ data)) {
+      if (cmd == CMD_SET) {
+        updateRelays(data); // 0x05 now means CH1 + CH3 ON.
+        sendFeedback(currentRelayState);
+      } else if (cmd == CMD_GET && data == 0x00) {
+        sendFeedback(currentRelayState);
       }
+      rxCount = 0;
     } else {
-      Serial.read(); // ทิ้งขยะ
+      // Keep a possible STX from the malformed frame for the next read.
+      for (byte i = 1; i < sizeof(rxFrame); ++i) rxFrame[i - 1] = rxFrame[i];
+      rxCount = sizeof(rxFrame) - 1;
+      while (rxCount > 0 && rxFrame[0] != STX) {
+        for (byte i = 1; i < rxCount; ++i) rxFrame[i - 1] = rxFrame[i];
+        --rxCount;
+      }
     }
   }
 }
@@ -59,7 +70,7 @@ void updateRelays(byte state) {
 }
 
 void sendFeedback(byte state) {
-  byte chk = 0xFF ^ state; 
-  byte frame[] = {STX, state, chk, ETX};
-  Serial.write(frame, 4);
+  byte chk = (byte)(0xFF ^ CMD_STATUS ^ state);
+  byte frame[] = {STX, CMD_STATUS, state, chk, ETX};
+  Serial.write(frame, sizeof(frame));
 }
