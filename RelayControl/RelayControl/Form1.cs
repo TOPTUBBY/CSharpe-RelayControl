@@ -46,7 +46,6 @@ namespace RelayControlApp
         {
             InitializeComponent();
             lblProtocol.Text = "Protocol: [STX 02] [CMD] [DATA] [CHECKSUM = FF XOR CMD XOR DATA] [ETX 03]";
-            lblProtocolNote.Text = "SET 01  |  GET 02  |  STATUS 81     All relay combinations, including CH1 + CH3 (0x05), are supported.";
             LoadAvailablePorts();
             Text += " | Protocol v2 (5 bytes)";
             AddStatusLog("GUI protocol v2 (5 bytes). Running: " + Application.ExecutablePath);
