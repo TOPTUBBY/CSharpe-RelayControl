@@ -18,13 +18,13 @@
 
 **CSharpe-RelayControl** เป็นโปรแกรมประยุกต์บน Windows (Windows Forms) ที่พัฒนาด้วย C# (.NET Framework 4.5) สำหรับควบคุมรีเลย์ 8 ช่อง (8-Channel Relay Module) ที่เชื่อมต่อกับไมโครคอนโทรลเลอร์ ESP32 ผ่านการสื่อสารทาง Serial Port (USB)
 
-โปรแกรมนี้ส่งคำสั่งเปิด-ปิดรีเลย์ผ่าน ESP32 และอ่านสถานะที่เฟิร์มแวร์ส่งกลับเพื่ออัปเดต GUI โดยสถานะที่ส่งกลับเป็นค่าคำสั่งล่าสุด ไม่ใช่การวัดหน้าสัมผัสรีเลย์จริง (โปรโตคอลปัจจุบันมีข้อจำกัดสำหรับ bitmask 0x05 ดูด้านล่าง)
+โปรแกรมนี้ส่งคำสั่งเปิด-ปิดรีเลย์ผ่าน ESP32 และอ่านสถานะที่เฟิร์มแวร์ส่งกลับเพื่ออัปเดต GUI โดยสถานะที่ส่งกลับเป็นค่าคำสั่งล่าสุด ไม่ใช่การวัดหน้าสัมผัสรีเลย์จริง โดยโปรโตคอล 5 ไบต์รองรับ bitmask ทุกค่า รวมถึง `0x05` (CH1+CH3)
 
 ### คุณสมบัติหลัก
 *   **ควบคุมรีเลย์ 8 ช่อง:** สามารถเปิด/ปิด รีเลย์แต่ละช่องได้อย่างอิสระผ่าน CheckBox บน GUI
 *   **การเชื่อมต่อ Serial Port:** เชื่อมต่อผ่าน USB Serial (Baudrate: 115200)
 *   **Status Feedback:** โปรแกรมแสดงค่าที่ ESP ส่งกลับเมื่อเชื่อมต่อหรือเปลี่ยนสถานะ และ ESP บันทึกค่าไว้ใน Flash; ไม่ได้ตรวจหน้าสัมผัสจริง
-*   **โปรโตคอลแบบมี checksum:** ใช้โครงสร้างข้อมูลแบบ Frame `[STX] [DATA] [CHECKSUM] [ETX]` เพื่อป้องกันข้อมูลผิดพลาด
+*   **โปรโตคอลแบบมี checksum:** ใช้โครงสร้างข้อมูลแบบ Frame `[STX] [CMD] [DATA] [CHECKSUM] [ETX]` เพื่อป้องกันข้อมูลผิดพลาด
 
 ### ฮาร์ดแวร์ที่ใช้จริง: โมดูลรีเลย์ 4 ช่อง × 2
 
@@ -57,8 +57,8 @@
 ### ข้อจำกัดที่ควรทราบของโค้ดเวอร์ชันนี้
 
 - GUI รับ **สถานะที่ ESP ส่งกลับตามคำสั่ง** ไม่ได้วัดหน้าสัมผัสรีเลย์หรือตรวจว่าโหลดทำงานจริง
-- โปรโตคอลเดิมใช้ `DATA=0x05` เป็นคำสั่งถามสถานะด้วย จึงสั่งชุด CH1+CH3 ON เพียงสองช่องนี้ (bitmask `0x05`) ไม่ได้ และ GUI จะข้ามการอัปเดตเมื่อได้รับสถานะ `0x05`; ไม่ควรใช้สถานะนี้ในงานจริงจนกว่าทั้ง GUI และเฟิร์มแวร์จะได้รับการแก้ไขและทดสอบร่วมกัน
-- โค้ด ESP8266 ใช้ `0xFF` เป็นตัวบ่งชี้ EEPROM ว่าง จึงคืนค่าสถานะทุกช่อง ON หลังรีบูตไม่ได้ตามที่เขียนไว้ในตัวอย่างปัจจุบัน
+- โปรโตคอลปัจจุบันแยก `CMD_SET` และ `CMD_GET` ออกจาก `DATA`: สั่ง CH1+CH3 ON เท่านั้นได้ด้วย `DATA=0x05`; ต้องอัปเดต GUI และเฟิร์มแวร์พร้อมกัน เพราะเฟรม 4 ไบต์รุ่นเก่าใช้ร่วมกับเฟรม 5 ไบต์ไม่ได้
+- ESP8266 ใช้ EEPROM address 1 เป็น marker เพื่อแยกสถานะ ALL ON (`0xFF`) จาก EEPROM ว่าง; สถานะรุ่นเก่าอื่น ๆ ยังอ่านได้ แต่ `0xFF` ที่เคยบันทึกด้วยโค้ดรุ่นเก่าแยกจาก EEPROM ว่างไม่ได้ จึงเริ่ม OFF ครั้งแรกหลังอัปเกรดจนกว่าจะสั่งใหม่
 - ESP32-C3 เลี่ยง GPIO2/8/9 แล้ว; ESP8266 ยังใช้ GPIO0/2 เป็น CH4/CH5 ซึ่งต้อง HIGH ระหว่าง reset และอาจทำให้รีเลย์กระตุกตอนบูต ควรทดสอบ cold boot, reset และ flash พร้อมต่อโมดูลจริงด้วยโหลดแรงดันต่ำ ESP32-C3 ที่ใช้ USB ภายในควรเปิด **USB CDC On Boot** ตาม [คำแนะนำ Espressif](https://docs.espressif.com/projects/arduino-esp32/en/latest/tutorials/cdc_dfu_flash.html)
 
 ### การใช้งาน
@@ -75,19 +75,19 @@
 
 **CSharpe-RelayControl** is a Windows Forms application developed in C# (.NET Framework 4.5) for controlling an 8-Channel Relay Module connected to an ESP32 microcontroller via Serial Port (USB).
 
-The application sends ON/OFF commands to the ESP32 and displays its reported state. The response reflects the last commanded bitmask, not measured relay contacts; bitmask 0x05 has a known collision in this version.
+The application sends ON/OFF commands to the ESP32 and displays its reported state. The response reflects the last commanded bitmask, not measured relay contacts. The five-byte protocol supports all bitmasks, including 0x05 for CH1+CH3.
 
 ### Key Features
 *   **8-Channel Relay Control:** Independently control each relay via GUI CheckBoxes.
 *   **Serial Communication:** Connects via USB Serial (Baudrate: 115200).
 *   **Status Feedback:** Displays the ESP32-reported bitmask; firmware saves it in flash for restoration on reboot. It does not sense physical contacts.
-*   **Framed protocol with XOR checksum:** Uses a framed data structure `[STX] [DATA] [CHECKSUM] [ETX]` to prevent data corruption.
+*   **Framed protocol with XOR checksum:** Uses a framed data structure `[STX] [CMD] [DATA] [CHECKSUM] [ETX]` to prevent data corruption.
 
 ### Actual relay hardware
 
 The pictured assembly uses **two 4-channel modules** for eight outputs. On ESP32-C3 SuperMini, CH1–CH7 use GPIO0,1,3–7 on one side and CH8 uses GPIO10 on the other side, skipping boot pin GPIO2. On ESP8266 NodeMCU/D1 mini, CH1–CH8 follow D0–D7 in board-label order; D3/GPIO0 and D4/GPIO2 remain boot-sensitive and must stay HIGH during reset. Test cold starts with the actual relay module. Each pictured relay is marked `SRD-05VDC-SL-C`, indicating a **5 V coil**. “3.3 V module” may describe a control-input rating; the module supply voltage and input compatibility cannot be confirmed from this photo alone. Verify the board documentation or measure the circuit before applying power. See the [Thai wiring map](#ฮาร์ดแวร์ที่ใช้จริง-โมดูลรีเลย์-4-ช่อง--2) and [project BOM](BOM.md).
 
-The GUI displays ESP-reported state, not measured contact state. This version reserves data value `0x05` for a status request, so CH1+CH3-only cannot be commanded. The firmware restores its last saved state after power returns. Check startup and contact behavior with a low-voltage test load before deploying.
+The GUI displays ESP-reported state, not measured contact state. This version uses separate command bytes for setting relays and requesting status. The firmware restores its last saved state after power returns. Check startup and contact behavior with a low-voltage test load before deploying.
 
 ### How to Use
 1. Upload the provided Arduino code to your ESP32 board.
@@ -99,247 +99,39 @@ The GUI displays ESP-reported state, not measured contact state. This version re
 
 ---
 
-## 📡 Communication Protocol (current 4-byte version)
+## 📡 Communication Protocol (current 5-byte version)
 
-**Baudrate:** 115200, 8N1. The GUI sends a four-byte frame `[STX=02] [DATA] [CHECKSUM] [ETX=03]`, where `CHECKSUM = DATA XOR FF`. The ESP sends its last commanded relay bitmask back using the same frame. Bit 0 is CH1; bit 7 is CH8. The checksum is for error detection only; it does not authenticate commands.
+**Serial:** 115200 baud, 8N1. Every frame is `[STX=02] [CMD] [DATA] [CHECKSUM] [ETX=03]`, where `CHECKSUM = FF XOR CMD XOR DATA` (one byte). Bit 0 of DATA controls CH1; bit 7 controls CH8. Relay outputs are active-low. The checksum detects accidental corruption; it does not authenticate commands.
 
-| Action | Frame (hex) | Notes |
+| CMD | Direction | Meaning | DATA |
+| --- | --- | --- | --- |
+| `01` SET | GUI → ESP | Set all eight channel bits at once | `00`–`FF` relay mask |
+| `02` GET | GUI → ESP | Request current status without changing outputs | Must be `00` |
+| `81` STATUS | ESP → GUI | Echo current commanded relay mask | `00`–`FF` |
+
+| Action | Frame (hex) | Response (hex) |
 | --- | --- | --- |
-| All OFF | `02 00 FF 03` | DATA = 00 |
-| CH1 ON only | `02 01 FE 03` | DATA = 01 |
-| Status request | `02 05 FA 03` | `05` is reserved, not a valid controllable bitmask in this implementation |
-| CH8 ON only | `02 80 7F 03` | DATA = 80 |
+| All OFF | `02 01 00 FE 03` | `02 81 00 7E 03` |
+| CH1 ON only | `02 01 01 FF 03` | `02 81 01 7F 03` |
+| CH1 + CH3 ON only | `02 01 05 FB 03` | `02 81 05 7B 03` |
+| All ON | `02 01 FF 01 03` | `02 81 FF 81 03` |
+| Status request | `02 02 00 FD 03` | `02 81 xx (7E XOR xx) 03` |
 
-The current status-request frame is four bytes, **not** a single standalone `05` byte. A payload `05` would also mean CH1+CH3 ON as a bitmask, creating a command collision; see the limitation above. Firmware and GUI must use this same protocol.
+The GUI reads STATUS feedback, updates checkboxes and writes the transmitted/received frames to Communication Log. Feedback reports the firmware's commanded state, **not** measured relay contacts. Invalid checksum, unknown commands, or a GET with nonzero DATA are ignored by the firmware. Frames may arrive in pieces over serial; both sides accumulate bytes before parsing and resynchronize after malformed frames.
+
+**Upgrade together:** the previous four-byte frame `[02] [DATA] [FF XOR DATA] [03]` is incompatible. Upload the new sketch and run the updated GUI from the same branch. For Wokwi, use the new sketch with the same 115200 8N1 serial bridge; an older simulator sketch will not answer these frames.
 
 ---
 
-## 💻 Arduino Code (For ESP32)
+## 💻 Arduino firmware
 
-คุณสามารถนำโค้ดด้านล่างนี้ไปอัปโหลดลงบน ESP32 ผ่าน Arduino IDE ได้เลย
-You can upload the following code to your ESP32 using the Arduino IDE.
+Use the matching sketch for your board; the complete code lives in the files below so README examples cannot drift from the firmware:
 
-```cpp
-#include <Preferences.h>
+- [ESP32 (original board)](firmware/ESP32_RelayControl/ESP32_RelayControl.ino): pins `14, 27, 26, 25, 33, 32, 4, 16` for CH1–CH8.
+- [ESP32-C3 SuperMini](firmware/ESP32C3_RelayControl/ESP32C3_RelayControl.ino): pins `0, 1, 3, 4, 5, 6, 7, 10`; enable **USB CDC On Boot** when required by the board setup.
+- [ESP8266 NodeMCU/D1 mini](firmware/ESP8266_RelayControl/ESP8266_RelayControl.ino): board pins D0–D7 in channel order; check D3/D4 boot levels described above.
 
-// กำหนดขา GPIO (หลีกเลี่ยงขา 12, 34, 35, 36, 39)
-// ตัวอย่างนี้ใช้ขา: 14, 27, 26, 25, 33, 32, 4, 16
-const int relayPins[] = {14, 27, 26, 25, 33, 32, 4, 16};
-byte currentRelayState = 0x00; 
-Preferences pref;
-
-const byte STX = 0x02;
-const byte ETX = 0x03;
-
-void setup() {
-  Serial.begin(115200);
-  pref.begin("relay-app", false);
-  currentRelayState = pref.getUChar("state", 0x00);
-
-  for (int i = 0; i < 8; i++) {
-    pinMode(relayPins[i], OUTPUT);
-    // ทำงานตามสถานะล่าสุดที่บันทึกไว้ (Active Low)
-    bool bitValue = (currentRelayState >> i) & 0x01;
-    digitalWrite(relayPins[i], bitValue ? LOW : HIGH); 
-  }
-}
-
-void loop() {
-  // รอจนกว่าข้อมูลจะเข้ามาอย่างน้อย 4 ไบต์
-  if (Serial.available() >= 4) {
-    if (Serial.peek() == STX) {
-      Serial.read(); // เคลียร์ STX ออกจาก Buffer
-      byte data = Serial.read();
-      byte checksum = Serial.read();
-      byte stopByte = Serial.read();
-
-      // ตรวจสอบ XOR Checksum และ Stop Byte
-      if (((data ^ checksum) == 0xFF) && (stopByte == ETX)) {
-        if (data == 0x05) {
-          // หากเป็นคำสั่ง 0x05 (ถามสถานะ) ให้ตอบกลับทันที
-          sendFeedback(currentRelayState);
-        } else {
-          // หากเป็นคำสั่งสั่งงาน Relay ให้อัปเดตและตอบกลับ
-          updateRelays(data);
-          sendFeedback(data);
-        }
-      }
-    } else {
-      // หากไบต์แรกไม่ใช่ STX ให้ทิ้งขยะไปทีละ 1 ไบต์
-      Serial.read(); 
-    }
-  }
-}
-
-void updateRelays(byte state) {
-  currentRelayState = state;
-  pref.putUChar("state", state); // บันทึกการเปลี่ยนแปลงลง Flash
-  
-  for (int i = 0; i < 8; i++) {
-    bool bitValue = (state >> i) & 0x01;
-    digitalWrite(relayPins[i], bitValue ? LOW : HIGH);
-  }
-}
-
-void sendFeedback(byte state) {
-  byte chk = 0xFF ^ state; // คำนวณ XOR Checksum ฝั่งส่งกลับ
-  byte frame[] = {STX, state, chk, ETX};
-  Serial.write(frame, 4);
-}
-```
----
-
-## 💻 Arduino Code (For ESP32-C3)
-note : USB CDC On Boot need to Enable
-
-```cpp
-#include <Preferences.h>
-
-// ESP32-C3 SuperMini: CH1..CH7 = GPIO0,1,3,4,5,6,7; CH8 = GPIO10.
-// Skip boot strapping GPIO2/8/9. Verify your board's pin labels.
-const int relayPins[] = {0, 1, 3, 4, 5, 6, 7, 10};
-byte currentRelayState = 0x00; 
-Preferences pref;
-
-const byte STX = 0x02;
-const byte ETX = 0x03;
-
-void updateRelays(byte state);
-void sendFeedback(byte state);
-
-void setup() {
-  Serial.begin(115200);
-  pref.begin("relay-app", false);
-  currentRelayState = pref.getUChar("state", 0x00);
-
-  for (int i = 0; i < 8; i++) {
-    // Preset output latch before enabling output; this cannot change boot straps.
-    bool bitValue = (currentRelayState >> i) & 0x01;
-    digitalWrite(relayPins[i], bitValue ? LOW : HIGH);
-    pinMode(relayPins[i], OUTPUT);
-  }
-}
-
-void loop() {
-  if (Serial.available() >= 4) {
-    if (Serial.peek() == STX) {
-      Serial.read(); // เคลียร์ STX 
-      byte data = Serial.read();
-      byte checksum = Serial.read();
-      byte stopByte = Serial.read();
-
-      // ตรวจสอบ XOR Checksum
-      if (((data ^ checksum) == 0xFF) && (stopByte == ETX)) {
-        if (data == 0x05) {
-          sendFeedback(currentRelayState);
-        } else {
-          updateRelays(data);
-          sendFeedback(data);
-        }
-      }
-    } else {
-      Serial.read(); // ทิ้งขยะ
-    }
-  }
-}
-
-void updateRelays(byte state) {
-  currentRelayState = state;
-  pref.putUChar("state", state); 
-  
-  for (int i = 0; i < 8; i++) {
-    bool bitValue = (state >> i) & 0x01;
-    digitalWrite(relayPins[i], bitValue ? LOW : HIGH);
-  }
-}
-
-void sendFeedback(byte state) {
-  byte chk = 0xFF ^ state; 
-  byte frame[] = {STX, state, chk, ETX};
-  Serial.write(frame, 4);
-}
-```
----
-
-## 💻 Arduino Code (For ESP8266)
-
-```cpp
-#include <EEPROM.h>
-
-// ESP8266 NodeMCU/D1 mini: CH1..CH8 follow D0..D7 board labels.
-// D3/GPIO0 and D4/GPIO2 are boot pins: both MUST remain HIGH at reset.
-// Relay inputs must not pull either pin LOW before setup() runs.
-// D8/GPIO15 must remain LOW at boot; TX/RX GPIO1/3 are for USB Serial.
-const int relayPins[] = {16, 5, 4, 0, 2, 14, 12, 13}; 
-byte currentRelayState = 0x00; 
-
-const byte STX = 0x02;
-const byte ETX = 0x03;
-
-void updateRelays(byte state);
-void sendFeedback(byte state);
-
-void setup() {
-  Serial.begin(115200);
-  
-  // ESP8266 ใช้ EEPROM ในการจำค่า (จองพื้นที่ 512 bytes)
-  EEPROM.begin(512);
-  currentRelayState = EEPROM.read(0);
-  
-  // กรณีบอร์ดใหม่ ค่าเริ่มต้นใน EEPROM จะเป็น 255 (0xFF) ให้เซ็ตกลับเป็น 0
-  if (currentRelayState == 0xFF) {
-    currentRelayState = 0x00;
-  }
-
-  for (int i = 0; i < 8; i++) {
-    // Preset output latch before enabling output; this cannot change boot straps.
-    bool bitValue = (currentRelayState >> i) & 0x01;
-    digitalWrite(relayPins[i], bitValue ? LOW : HIGH);
-    pinMode(relayPins[i], OUTPUT);
-  }
-}
-
-void loop() {
-  if (Serial.available() >= 4) {
-    if (Serial.peek() == STX) {
-      Serial.read(); 
-      byte data = Serial.read();
-      byte checksum = Serial.read();
-      byte stopByte = Serial.read();
-
-      if (((data ^ checksum) == 0xFF) && (stopByte == ETX)) {
-        if (data == 0x05) {
-          sendFeedback(currentRelayState);
-        } else {
-          updateRelays(data);
-          sendFeedback(data);
-        }
-      }
-    } else {
-      Serial.read(); 
-    }
-  }
-}
-
-void updateRelays(byte state) {
-  currentRelayState = state;
-  
-  // บันทึกสถานะลง EEPROM ของ ESP8266 ที่ Address 0
-  EEPROM.write(0, state);
-  EEPROM.commit(); 
-  
-  for (int i = 0; i < 8; i++) {
-    bool bitValue = (state >> i) & 0x01;
-    digitalWrite(relayPins[i], bitValue ? LOW : HIGH);
-  }
-}
-
-void sendFeedback(byte state) {
-  byte chk = 0xFF ^ state; 
-  byte frame[] = {STX, state, chk, ETX};
-  Serial.write(frame, 4);
-}
-```
+All three implement the five-byte protocol above. The GUI code is in [`Form1.cs`](RelayControl/RelayControl/Form1.cs). The optional UI branch adds ALL ON, ALL OFF, and serial-port Refresh controls; the protocol and sketches are the same on both branches.
 
 ---
 **Developer:** TOPTUBBY (Patiphan Phakdeeburi) | **Version:** 1.1.5.26
