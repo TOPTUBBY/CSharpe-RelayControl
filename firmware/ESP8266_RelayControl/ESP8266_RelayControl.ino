@@ -1,5 +1,3 @@
-#include <EEPROM.h>
-
 // ESP8266 NodeMCU/D1 mini: CH1..CH8 follow D0..D7 board labels.
 // D3/GPIO0 and D4/GPIO2 are boot pins: both MUST remain HIGH at reset.
 // Relay inputs must not pull either pin LOW before setup() runs.
@@ -12,7 +10,6 @@ const byte ETX = 0x03;
 const byte CMD_SET = 0x01;
 const byte CMD_GET = 0x02;
 const byte CMD_STATUS = 0x81;
-const byte EEPROM_MARKER = 0xA5;
 byte rxFrame[5];
 byte rxCount = 0;
 
@@ -20,22 +17,15 @@ void updateRelays(byte state);
 void sendFeedback(byte state);
 
 void setup() {
-  Serial.begin(115200);
-  
-  // ESP8266 ใช้ EEPROM ในการจำค่า (จองพื้นที่ 512 bytes)
-  EEPROM.begin(512);
-  byte savedState = EEPROM.read(0);
-  // Address 1 distinguishes erased EEPROM from a valid ALL ON (0xFF) state.
-  // Preserve previously saved states other than 0xFF during the upgrade.
-  if (EEPROM.read(1) == EEPROM_MARKER || savedState != 0xFF)
-    currentRelayState = savedState;
+  // Power-up policy: ignore all previously saved states and start OFF.
+  currentRelayState = 0x00;
 
   for (int i = 0; i < 8; i++) {
-    // Preset output latch before enabling output; this cannot change boot straps.
-    bool bitValue = (currentRelayState >> i) & 0x01;
-    digitalWrite(relayPins[i], bitValue ? LOW : HIGH);
+    // Active-low module: HIGH = OFF. Set latch before enabling output.
+    digitalWrite(relayPins[i], HIGH);
     pinMode(relayPins[i], OUTPUT);
   }
+  Serial.begin(115200);
 }
 
 void loop() {
@@ -68,12 +58,6 @@ void loop() {
 
 void updateRelays(byte state) {
   currentRelayState = state;
-  
-  // บันทึกสถานะลง EEPROM ของ ESP8266 ที่ Address 0
-  EEPROM.write(0, state);
-  EEPROM.write(1, EEPROM_MARKER);
-  EEPROM.commit(); 
-  
   for (int i = 0; i < 8; i++) {
     bool bitValue = (state >> i) & 0x01;
     digitalWrite(relayPins[i], bitValue ? LOW : HIGH);

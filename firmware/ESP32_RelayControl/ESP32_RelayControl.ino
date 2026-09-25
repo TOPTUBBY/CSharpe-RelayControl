@@ -1,10 +1,7 @@
-#include <Preferences.h>
-
 // ESP32 (original module): wire CH1..CH8 to these pins in order.
 // Verify the pinout of your actual ESP32 board before wiring.
 const int relayPins[] = {14, 27, 26, 25, 33, 32, 4, 16};
 byte currentRelayState = 0x00; 
-Preferences pref;
 
 const byte STX = 0x02;
 const byte ETX = 0x03;
@@ -18,16 +15,15 @@ void updateRelays(byte state);
 void sendFeedback(byte state);
 
 void setup() {
-  Serial.begin(115200);
-  pref.begin("relay-app", false);
-  currentRelayState = pref.getUChar("state", 0x00);
+  // Power-up policy: always start with all relay channels OFF.
+  currentRelayState = 0x00;
 
   for (int i = 0; i < 8; i++) {
-    // Preset output latch before enabling output; this cannot change boot straps.
-    bool bitValue = (currentRelayState >> i) & 0x01;
-    digitalWrite(relayPins[i], bitValue ? LOW : HIGH);
+    // Active-low module: HIGH = OFF. Set latch before enabling output.
+    digitalWrite(relayPins[i], HIGH);
     pinMode(relayPins[i], OUTPUT);
   }
+  Serial.begin(115200);
 }
 
 void loop() {
@@ -61,7 +57,6 @@ void loop() {
 
 void updateRelays(byte state) {
   currentRelayState = state;
-  pref.putUChar("state", state); 
   
   for (int i = 0; i < 8; i++) {
     bool bitValue = (state >> i) & 0x01;

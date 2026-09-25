@@ -48,6 +48,8 @@ namespace RelayControlApp
             lblProtocol.Text = "Protocol: [STX 02] [CMD] [DATA] [CHECKSUM = FF XOR CMD XOR DATA] [ETX 03]";
             lblProtocolNote.Text = "SET 01  |  GET 02  |  STATUS 81     All relay combinations, including CH1 + CH3 (0x05), are supported.";
             LoadAvailablePorts();
+            Text += " | Protocol v2 (5 bytes)";
+            AddStatusLog("GUI protocol v2 (5 bytes). Running: " + Application.ExecutablePath);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -206,7 +208,7 @@ namespace RelayControlApp
                 serialPort1.Write(frame, 0, frame.Length);
 
                 string hexStr = BitConverter.ToString(frame).Replace("-", " ");
-                AddStatusLog($"Command Sent: {hexStr}");
+                AddStatusLog($"Command Sent ({frame.Length} bytes): {hexStr}");
             }
         }
 
