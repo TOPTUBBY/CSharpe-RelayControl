@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 // ESP32-C3 SuperMini: CH1..CH7 = GPIO0,1,3,4,5,6,7; CH8 = GPIO10.
 // Skip boot strapping GPIO2/8/9. Verify your board's pin labels.
 const int relayPins[] = {0, 1, 3, 4, 5, 6, 7, 10};

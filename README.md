@@ -137,6 +137,10 @@ Use the matching sketch for your board; the complete code lives in the files bel
 
 All three implement the five-byte protocol above. The GUI code is in [`Form1.cs`](RelayControl/RelayControl/Form1.cs). The optional UI branch adds ALL ON, ALL OFF, and serial-port Refresh controls; the protocol and sketches are the same on both branches.
 
+### PlatformIO / Wokwi (`src/main.cpp`)
+
+If you use PlatformIO instead of the Arduino IDE, copy the **entire** matching sketch above to `src/main.cpp`. Each sketch starts with `#include <Arduino.h>`, which C++ source files need for `byte`, `Serial`, `digitalWrite`, and `pinMode`. Keep only one `setup()`/`loop()` pair in the project; do not compile both a copied `main.cpp` and the matching `.ino` in `src` at the same time. Set `framework = arduino` and the **actual board ID** in your project's `platformio.ini`, then run **PlatformIO: Build** (`pio run`). A project using `framework = espidf` cannot compile this Arduino sketch unchanged. The Wokwi firmware project must use the same five-byte sketch as the Windows GUI.
+
 ---
 **Developer:** TOPTUBBY (Patiphan Phakdeeburi) | **Version:** 1.1.5.26
 

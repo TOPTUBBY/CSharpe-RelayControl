@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 // ESP8266 NodeMCU/D1 mini: CH1..CH8 follow D0..D7 board labels.
 // D3/GPIO0 and D4/GPIO2 are boot pins: both MUST remain HIGH at reset.
 // Relay inputs must not pull either pin LOW before setup() runs.

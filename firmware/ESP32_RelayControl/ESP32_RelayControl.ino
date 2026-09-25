@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 // ESP32 (original module): wire CH1..CH8 to these pins in order.
 // Verify the pinout of your actual ESP32 board before wiring.
 const int relayPins[] = {14, 27, 26, 25, 33, 32, 4, 16};
