@@ -30,15 +30,23 @@ namespace RelayControlApp
 {
     public partial class Form1 : Form
     {
+        private const byte Stx = 0x02;
+        private const byte Etx = 0x03;
+        private const byte CmdSet = 0x01;
+        private const byte CmdGet = 0x02;
+        private const byte CmdStatus = 0x81;
         private const string ProgramAuthor = "Patiphan Phakdeeburi.";
         private byte currentStatus = 0x00;
         private bool isUpdatingUI = false;
+        private readonly List<byte> receiveBuffer = new List<byte>();
         private List<string> BlackList = new List<string>();
         private List<string> file_List = new List<string>();
 
         public Form1()
         {
             InitializeComponent();
+            lblProtocol.Text = "Protocol: [STX 02] [CMD] [DATA] [CHECKSUM = FF XOR CMD XOR DATA] [ETX 03]";
+            lblProtocolNote.Text = "SET 01  |  GET 02  |  STATUS 81     All relay combinations, including CH1 + CH3 (0x05), are supported.";
             LoadAvailablePorts();
         }
 
@@ -91,6 +99,7 @@ namespace RelayControlApp
                 if (serialPort1.IsOpen)
                 {
                     serialPort1.Close();
+                    lock (receiveBuffer) receiveBuffer.Clear();
                     AddStatusLog("Serial connection closed for port refresh.");
                 }
 
@@ -115,6 +124,7 @@ namespace RelayControlApp
                 {
                     serialPort1.PortName = cmbPort.Text;
                     serialPort1.BaudRate = 115200;
+                    lock (receiveBuffer) receiveBuffer.Clear();
                     serialPort1.Open();
                     serialPort1.DtrEnable = false;
                     serialPort1.RtsEnable = false;
@@ -123,10 +133,10 @@ namespace RelayControlApp
                     btnConnect.BackColor = Color.Salmon;
                     AddStatusLog($"Connected to {serialPort1.PortName}");
 
-                    // ส่งคำสั่งขอสถานะแบบ XOR Checksum: 02 05 FA 03
+                    // Request current state after the controller has finished booting.
                     Timer t = new Timer { Interval = 1000 };
                     t.Tick += (s, ev) => {
-                        if (serialPort1.IsOpen) SendProtocolFrame(0x05);
+                        if (serialPort1.IsOpen) SendProtocolFrame(CmdGet, 0x00);
                         t.Stop();
                     };
                     t.Start();
@@ -155,7 +165,7 @@ namespace RelayControlApp
             if (chk.Checked) currentStatus |= (byte)(1 << index);
             else currentStatus &= (byte)~(1 << index);
 
-            SendProtocolFrame(currentStatus);
+            SendProtocolFrame(CmdSet, currentStatus);
         }
 
         private void btnAllOn_Click(object sender, EventArgs e)
@@ -178,7 +188,7 @@ namespace RelayControlApp
 
             try
             {
-                SendProtocolFrame(status);
+                SendProtocolFrame(CmdSet, status);
                 UpdateUIStatus(status);
             }
             catch (Exception ex)
@@ -187,13 +197,13 @@ namespace RelayControlApp
             }
         }
 
-        private void SendProtocolFrame(byte data)
+        private void SendProtocolFrame(byte command, byte data)
         {
             if (serialPort1.IsOpen)
             {
-                byte chksum = (byte)(0xFF ^ data); // XOR Checksum
-                byte[] frame = { 0x02, data, chksum, 0x03 };
-                serialPort1.Write(frame, 0, 4);
+                byte chksum = (byte)(0xFF ^ command ^ data);
+                byte[] frame = { Stx, command, data, chksum, Etx };
+                serialPort1.Write(frame, 0, frame.Length);
 
                 string hexStr = BitConverter.ToString(frame).Replace("-", " ");
                 AddStatusLog($"Command Sent: {hexStr}");
@@ -204,23 +214,29 @@ namespace RelayControlApp
         {
             try
             {
-                while (serialPort1.IsOpen && serialPort1.BytesToRead >= 4)
+                lock (receiveBuffer)
                 {
-                    if (serialPort1.ReadByte() == 0x02)
+                    while (serialPort1.IsOpen && serialPort1.BytesToRead > 0)
                     {
-                        byte data = (byte)serialPort1.ReadByte();
-                        byte chksum = (byte)serialPort1.ReadByte();
-                        byte stop = (byte)serialPort1.ReadByte();
-
-                        // ตรวจสอบ XOR Checksum
-                        if (((data ^ chksum) == 0xFF) && stop == 0x03)
+                        receiveBuffer.Add((byte)serialPort1.ReadByte());
+                        while (receiveBuffer.Count > 0)
                         {
-                            byte[] fullFrame = { 0x02, data, chksum, stop };
-                            string hexStatus = BitConverter.ToString(fullFrame).Replace("-", " ");
+                            if (receiveBuffer[0] != Stx) { receiveBuffer.RemoveAt(0); continue; }
+                            if (receiveBuffer.Count < 5) break;
 
-                            this.Invoke(new MethodInvoker(delegate {
+                            byte command = receiveBuffer[1];
+                            byte data = receiveBuffer[2];
+                            bool valid = receiveBuffer[4] == Etx &&
+                                receiveBuffer[3] == (byte)(0xFF ^ command ^ data);
+                            if (!valid) { receiveBuffer.RemoveAt(0); continue; }
+
+                            byte[] fullFrame = receiveBuffer.GetRange(0, 5).ToArray();
+                            receiveBuffer.RemoveRange(0, 5);
+                            if (command != CmdStatus) continue;
+                            string hexStatus = BitConverter.ToString(fullFrame).Replace("-", " ");
+                            this.BeginInvoke(new MethodInvoker(delegate {
                                 AddStatusLog($"Status Synced: {hexStatus}");
-                                if (data != 0x05) UpdateUIStatus(data); // ถ้าไม่ใช่ 0x05 ให้อัปเดต UI
+                                UpdateUIStatus(data);
                             }));
                         }
                     }
@@ -273,65 +289,3 @@ namespace RelayControlApp
         }
     }
 }
-
-
-/*====================ARDUINO CODE FOR ESP32====================
-#include <Preferences.h>
-
-const int relayPins[] = {13, 12, 14, 27, 26, 25, 33, 32};
-byte currentRelayState = 0x00; 
-Preferences pref;
-
-const byte STX = 0x02;
-const byte ETX = 0x03;
-
-void setup() {
-  Serial.begin(115200);
-  pref.begin("relay-app", false);
-  currentRelayState = pref.getUChar("state", 0x00);
-
-  for (int i = 0; i < 8; i++) {
-    pinMode(relayPins[i], OUTPUT);
-    bool bitValue = (currentRelayState >> i) & 0x01;
-    digitalWrite(relayPins[i], bitValue ? LOW : HIGH); 
-  }
-}
-
-void loop() {
-  if (Serial.available() >= 4) {
-    if (Serial.read() == STX) {
-      byte data = Serial.read();
-      byte checksum = Serial.read();
-      byte stopByte = Serial.read();
-
-      // ตรวจสอบ XOR Checksum (Data ^ Checksum ต้องได้ 0xFF)
-      if (((data ^ checksum) == 0xFF) && (stopByte == ETX)) {
-        if (data == 0x05) {
-          // กรณีได้รับเฟรมขอสถานะ 02 05 FA 03
-          sendFeedback(currentRelayState);
-        } else {
-          // กรณีได้รับเฟรมควบคุม Relay ปกติ
-          updateRelays(data);
-          sendFeedback(data);
-        }
-      }
-    }
-  }
-}
-
-void updateRelays(byte state) {
-  currentRelayState = state;
-  pref.putUChar("state", state);
-  for (int i = 0; i < 8; i++) {
-    bool bitValue = (state >> i) & 0x01;
-    digitalWrite(relayPins[i], bitValue ? LOW : HIGH);
-  }
-}
-
-void sendFeedback(byte state) {
-  byte chk = 0xFF ^ state; // คำนวณ XOR Checksum
-  byte frame[] = {STX, state, chk, ETX};
-  Serial.write(frame, 4);
-}
-
-====================ARDUINO CODE FOR ESP32====================*/
