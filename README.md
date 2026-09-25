@@ -51,7 +51,7 @@
 - กำหนดไฟเลี้ยง `VCC` จากสเปกโมดูลที่ซื้อและผลวัด ไม่ต่อ 5 V เข้าขา GPIO/3V3 ของ ESP โดยตรง หากโมดูลรับอินพุต 3.3 V ไม่แน่นอนหรือมี pull-up ไป 5 V ให้ใช้วงจรขับ/level interface ที่ระบุสเปกชัดเจน
 - คอยล์ Songle 5 V รุ่นนี้กินประมาณ 71.4 mA/ตัว; 8 ตัวพร้อมกันเป็นประมาณ 0.57 A **เฉพาะคอยล์** (ยังไม่รวม LED/วงจรขับ/ESP) จึงควรเริ่มออกแบบด้วยแหล่งจ่าย 5 V ที่มีกระแสสำรอง เช่น 2 A **หากบอร์ดโมดูลระบุว่าใช้ไฟเลี้ยง 5 V** แล้ววัดกระแสจริงขณะทุกช่อง ON อย่าดึงกระแสคอยล์จาก GPIO หรือขา 3V3 ของบอร์ด ESP
 - ขั้วโหลดแต่ละช่องเป็น `COM/NO/NC`: ตรวจ silk screen และวัด continuity เพื่อยืนยันตำแหน่งก่อนต่อโหลด `COM–NO` เหมาะเมื่ออยากให้หน้าสัมผัสเปิดตอนคอยล์ไม่มีไฟ ค่า 10 A ที่พิมพ์บนรีเลย์เป็นพิกัด **ชิ้นส่วน** ไม่ใช่การรับรองทั้งโมดูล/สาย/ขั้วต่อสำหรับโหลดทุกชนิด
-- ESP32 และ ESP32-C3 ตั้ง `RELAY_ACTIVE_HIGH = true` อิงจากภาพ Wokwi ที่ `LED1` ติดเมื่อ `IN` เป็น HIGH: ON → HIGH และ OFF/เริ่มบูต → LOW ส่วน ESP8266 ตั้ง `false` ตามข้อจำกัด D3/D4 ที่ต้อง HIGH ระหว่าง reset; เปลี่ยนตัวแปรนี้ให้ตรงกับโมดูลจริงก่อนแฟลช และทดสอบกับ LED/โหลดแรงดันต่ำ
+- **ESP32-C3 กับโมดูลจริงของโปรเจกต์นี้:** ค่าเริ่มต้น `RELAY_ACTIVE_HIGH=0` (active-low): ON → LOW, OFF → HIGH; บูตเข้า `setup()` แล้วสั่ง OFF ทุกช่องแม้ยังไม่เชื่อมต่อ GUI สำหรับ Wokwi ที่ไฟ LED1 ติดเมื่อ `IN` เป็น HIGH ให้กำหนด `RELAY_ACTIVE_HIGH=1` เฉพาะตอน build Wokwi (ดูวิธีด้านล่าง) ESP32 รุ่นปกติยังใช้ `true` ตาม Wokwi; ESP8266 ใช้ `false` ตามข้อจำกัดขาบูต
 - รายการชิ้นส่วนและเงื่อนไขการเลือกซื้ออยู่ใน [BOM ของโปรเจกต์](BOM.md)
 
 ### ข้อจำกัดที่ควรทราบของโค้ดเวอร์ชันนี้
@@ -101,7 +101,7 @@ The GUI displays ESP-reported state, not measured contact state. This version us
 
 ## 📡 Communication Protocol (current 5-byte version)
 
-**Serial:** 115200 baud, 8N1. Every frame is `[STX=02] [CMD] [DATA] [CHECKSUM] [ETX=03]`, where `CHECKSUM = FF XOR CMD XOR DATA` (one byte). Bit 0 of DATA controls CH1; bit 7 controls CH8. ESP32/ESP32-C3 default to active-high to match the observed Wokwi LED1; ESP8266 defaults to active-low to keep its boot pins safe. Set `RELAY_ACTIVE_HIGH` for the actual board and relay module. The checksum detects accidental corruption; it does not authenticate commands.
+**Serial:** 115200 baud, 8N1. Every frame is `[STX=02] [CMD] [DATA] [CHECKSUM] [ETX=03]`, where `CHECKSUM = FF XOR CMD XOR DATA` (one byte). Bit 0 of DATA controls CH1; bit 7 controls CH8. ESP32-C3 defaults to active-low for the physical module reported by the user, ESP32 defaults to active-high for the prior Wokwi setup, and ESP8266 defaults to active-low for its boot pins. Set `RELAY_ACTIVE_HIGH` to match the actual module. The checksum detects accidental corruption; it does not authenticate commands.
 
 | CMD | Direction | Meaning | DATA |
 | --- | --- | --- | --- |
@@ -123,7 +123,7 @@ The GUI reads STATUS feedback, updates checkboxes and writes the transmitted/rec
 
 **Checking the running GUI:** on startup, Communication Log shows `GUI protocol v2 (5 bytes). Running: <full path to RelayControl.exe>`. A connection status request then logs `Command Sent (5 bytes): 02 02 00 FD 03`. If you see a four-byte command, the running executable is an older build: close all RelayControl processes, open `RelayControl/RelayControl.sln`, choose the desired branch, rebuild and start with **F5**. Check the executable path printed in the log. Generated `bin/` and `obj/` files are no longer stored in this repository. A firmware reply of four bytes means the controller or Wokwi sketch still uses the old protocol; upload the matching sketch above.
 
-**Power-up behavior:** all three sketches drive `RELAY_OFF_LEVEL` before enabling each GPIO output and ignore previously saved states. With active-high selected, OFF is LOW; with active-low selected, OFF is HIGH. ESP8266 defaults to active-low for its boot-sensitive D3/D4 pins. This takes effect once `setup()` runs; GPIO levels during MCU reset/boot require hardware design. In particular, ESP8266 D3/D4 must stay HIGH during boot and may temporarily activate an active-high relay. Verify `COM–NO` and `COM–NC` contact behavior separately from the Wokwi LED indicator.
+**Power-up behavior:** all three sketches drive `RELAY_OFF_LEVEL` before enabling each GPIO output and ignore previously saved states. With active-high selected, OFF is LOW; with active-low selected, OFF is HIGH. ESP32-C3 and ESP8266 default to active-low. This takes effect once `setup()` runs, without waiting for a GUI connection; GPIO levels during MCU reset/boot require hardware design. If an active-low board turns on before `setup()` runs, add suitable external pull-ups to the module's compatible logic rail or a driver enable/interlock circuit after checking the module's input voltage. In particular, ESP8266 D3/D4 must stay HIGH during boot and may temporarily activate an active-high relay. Verify `COM–NO` and `COM–NC` contact behavior separately from the Wokwi LED indicator.
 
 ---
 
@@ -137,11 +137,13 @@ Use the matching sketch for your board; the complete code lives in the files bel
 
 All three implement the five-byte protocol above. The GUI code is in [`Form1.cs`](RelayControl/RelayControl/Form1.cs). The optional UI branch adds ALL ON, ALL OFF, and serial-port Refresh controls; the protocol and sketches are the same on both branches.
 
-**Relay polarity:** each sketch defines `RELAY_ACTIVE_HIGH` near `relayPins[]`. ESP32 and ESP32-C3 default to `true` to match the LED1 behavior observed in the Wokwi setup shown: status `00` drives all IN pins LOW and status `FF` drives them HIGH. ESP8266 defaults to `false` so its D3/D4 boot pins stay OFF while HIGH. Set this value to match the actual input circuit and verify the contacts before attaching loads. This setting does not change the five-byte protocol or channel mapping.
+**Relay polarity:** ESP32-C3 defaults to `RELAY_ACTIVE_HIGH=0` for the real active-low module: status `00` drives all IN pins HIGH and status `FF` drives them LOW. Wokwi's observed LED1 behavior needs `RELAY_ACTIVE_HIGH=1`: status `00` drives LOW and status `FF` drives HIGH. The original ESP32 sketch still defaults to `true`; ESP8266 defaults to `false`. Check the actual relay contacts before attaching loads. Polarity selection does not change the five-byte protocol or channel mapping.
 
 ### PlatformIO / Wokwi (`src/main.cpp`)
 
 If you use PlatformIO instead of the Arduino IDE, copy the **entire** matching sketch above to `src/main.cpp`. Each sketch starts with `#include <Arduino.h>`, which C++ source files need for `byte`, `Serial`, `digitalWrite`, and `pinMode`. Keep only one `setup()`/`loop()` pair in the project; do not compile both a copied `main.cpp` and the matching `.ino` in `src` at the same time. Set `framework = arduino` and the **actual board ID** in your project's `platformio.ini`, then run **PlatformIO: Build** (`pio run`). A project using `framework = espidf` cannot compile this Arduino sketch unchanged. The Wokwi firmware project must use the same five-byte sketch as the Windows GUI.
+
+For ESP32-C3, upload the default firmware (`RELAY_ACTIVE_HIGH=0`) to the real board. For the Wokwi project, add `build_flags = -DRELAY_ACTIVE_HIGH=1` under its `[env:...]` section in `platformio.ini`, then rebuild. If you share one PlatformIO project for both targets, use separate environments so the real-board upload never uses the Wokwi flag. In Arduino IDE, change the `#define RELAY_ACTIVE_HIGH 0` line to `1` only in the Wokwi copy. Restore `0` before uploading to the physical module.
 
 ---
 **Developer:** TOPTUBBY (Patiphan Phakdeeburi) | **Version:** 1.1.5.26

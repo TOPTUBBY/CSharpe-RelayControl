@@ -3,8 +3,11 @@
 // ESP32-C3 SuperMini: CH1..CH7 = GPIO0,1,3,4,5,6,7; CH8 = GPIO10.
 // Skip boot strapping GPIO2/8/9. Verify your board's pin labels.
 const int relayPins[] = {0, 1, 3, 4, 5, 6, 7, 10};
-// Wokwi LED1 in the user setup lights with HIGH; set false for an active-low board.
-const bool RELAY_ACTIVE_HIGH = true;
+// The physical relay board is active-low. For the Wokwi LED1 simulation,
+// set RELAY_ACTIVE_HIGH=1 in the build flags (or change the default below).
+#ifndef RELAY_ACTIVE_HIGH
+#define RELAY_ACTIVE_HIGH 0
+#endif
 const int RELAY_ON_LEVEL = RELAY_ACTIVE_HIGH ? HIGH : LOW;
 const int RELAY_OFF_LEVEL = RELAY_ACTIVE_HIGH ? LOW : HIGH;
 byte currentRelayState = 0x00; 
