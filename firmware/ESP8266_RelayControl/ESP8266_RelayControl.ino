@@ -5,6 +5,12 @@
 // Relay inputs must not pull either pin LOW before setup() runs.
 // D8/GPIO15 must remain LOW at boot; TX/RX GPIO1/3 are for USB Serial.
 const int relayPins[] = {16, 5, 4, 0, 2, 14, 12, 13}; 
+// GPIO0/D3 and GPIO2/D4 must be HIGH during reset: default to active-low
+// hardware so they remain OFF during boot. For active-high simulation, set true;
+// real active-high hardware needs an external enable gate for these two pins.
+const bool RELAY_ACTIVE_HIGH = false;
+const int RELAY_ON_LEVEL = RELAY_ACTIVE_HIGH ? HIGH : LOW;
+const int RELAY_OFF_LEVEL = RELAY_ACTIVE_HIGH ? LOW : HIGH;
 byte currentRelayState = 0x00; 
 
 const byte STX = 0x02;
@@ -23,8 +29,8 @@ void setup() {
   currentRelayState = 0x00;
 
   for (int i = 0; i < 8; i++) {
-    // Active-low module: HIGH = OFF. Set latch before enabling output.
-    digitalWrite(relayPins[i], HIGH);
+    // Set the OFF level before enabling output, regardless of module polarity.
+    digitalWrite(relayPins[i], RELAY_OFF_LEVEL);
     pinMode(relayPins[i], OUTPUT);
   }
   Serial.begin(115200);
@@ -62,7 +68,7 @@ void updateRelays(byte state) {
   currentRelayState = state;
   for (int i = 0; i < 8; i++) {
     bool bitValue = (state >> i) & 0x01;
-    digitalWrite(relayPins[i], bitValue ? LOW : HIGH);
+    digitalWrite(relayPins[i], bitValue ? RELAY_ON_LEVEL : RELAY_OFF_LEVEL);
   }
 }
 

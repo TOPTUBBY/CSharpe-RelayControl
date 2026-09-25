@@ -3,6 +3,10 @@
 // ESP32 (original module): wire CH1..CH8 to these pins in order.
 // Verify the pinout of your actual ESP32 board before wiring.
 const int relayPins[] = {14, 27, 26, 25, 33, 32, 4, 16};
+// Wokwi LED1 in the user setup lights with HIGH; set false for an active-low board.
+const bool RELAY_ACTIVE_HIGH = true;
+const int RELAY_ON_LEVEL = RELAY_ACTIVE_HIGH ? HIGH : LOW;
+const int RELAY_OFF_LEVEL = RELAY_ACTIVE_HIGH ? LOW : HIGH;
 byte currentRelayState = 0x00; 
 
 const byte STX = 0x02;
@@ -21,8 +25,8 @@ void setup() {
   currentRelayState = 0x00;
 
   for (int i = 0; i < 8; i++) {
-    // Active-low module: HIGH = OFF. Set latch before enabling output.
-    digitalWrite(relayPins[i], HIGH);
+    // Set the OFF level before enabling output, regardless of module polarity.
+    digitalWrite(relayPins[i], RELAY_OFF_LEVEL);
     pinMode(relayPins[i], OUTPUT);
   }
   Serial.begin(115200);
@@ -62,7 +66,7 @@ void updateRelays(byte state) {
   
   for (int i = 0; i < 8; i++) {
     bool bitValue = (state >> i) & 0x01;
-    digitalWrite(relayPins[i], bitValue ? LOW : HIGH);
+    digitalWrite(relayPins[i], bitValue ? RELAY_ON_LEVEL : RELAY_OFF_LEVEL);
   }
 }
 

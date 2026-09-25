@@ -45,13 +45,13 @@
 
 - **ESP32-C3 SuperMini:** เดินสาย CH1–CH7 ตาม GPIO `0, 1, 3, 4, 5, 6, 7` บนฝั่งหนึ่ง โดยข้าม GPIO2 (strapping); CH8 ต่อ GPIO10 อีกฝั่ง ไม่ใช้ GPIO8/9 (strapping) หรือ GPIO18/19 (USB) ตรวจตำแหน่ง GPIO บนบอร์ด SuperMini รุ่นจริงก่อนเสียบสาย
 - **ESP8266:** ตารางและสเก็ตช์เรียง CH1–CH8 ตามป้าย `D0–D7`; เดินสายไปตามลำดับขาจริงเท่าที่บอร์ดจัดไว้ แล้วข้ามขาไฟเลี้ยง/กราวด์หรือย้ายไปอีกฝั่งเมื่อจำเป็น ตำแหน่งขา NodeMCU และ D1 mini ต่างกัน ให้ยึด **ป้าย D0–D7 บนบอร์ดจริง** กับตารางนี้ GPIO0/D3 (CH4) และ GPIO2/D4 (CH5) เป็นสองขา ⚠ ที่เลี่ยงไม่ได้เมื่อขับรีเลย์ 8 ช่องตรงและคง USB Serial อย่าใช้ GPIO15/D8 ซึ่งต้อง LOW ตอนบูต หรือ GPIO1/3 ที่ใช้ Serial กับ GUI
-- **สำคัญสำหรับ D3/D4:** ใช้เฉพาะอินพุตรีเลย์ active-low ที่ไม่ดึง GPIO0/2 ลง LOW ระหว่าง reset และไม่ป้อนไฟเกิน 3.3 V; ควรมี pull-up ไป 3.3 V ตามวงจรบอร์ดจริง (เช่น 10 kΩ หากยังไม่มี) แล้ววัดว่าทั้งสองขา HIGH ตั้งแต่ก่อนจ่ายไฟรีเลย์/เปิดเครื่อง หากบอร์ดบูตไม่ขึ้นหรือมีรีเลย์กระตุกระหว่างรีเซ็ต ต้องแก้ฮาร์ดแวร์หรือใช้ตัวขยาย GPIO ไม่สามารถแก้ด้วย `digitalWrite()` หลังบูตได้ ดู [Espressif: ESP32-C3 GPIO](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/peripherals/gpio.html) และ [ESP8266 boot mode](https://docs.espressif.com/projects/esptool/en/latest/esp8266/advanced-topics/boot-mode-selection.html)
+- **สำคัญสำหรับ D3/D4:** GPIO0/2 ของ ESP8266 ต้อง HIGH ระหว่าง reset เพื่อบูตได้ สเก็ตช์ ESP8266 จึงเริ่มที่ `RELAY_ACTIVE_HIGH = false` เพื่อให้ HIGH เป็น OFF ขณะบูต; หากเปลี่ยนไปใช้โมดูล active-high สองช่องนี้อาจ ON ชั่วคราวก่อน `setup()` ตั้งค่า OFF; ซอฟต์แวร์รับประกัน OFF ตลอดช่วงบูตไม่ได้ ต้องใช้วงจร enable/interlock ภายนอก หรือย้ายไปบอร์ด/ตัวขยาย GPIO ที่มีขาปลอดข้อจำกัด ส่วนโมดูล active-low สามารถตั้ง `RELAY_ACTIVE_HIGH = false` แต่ยังต้องยืนยันว่าอินพุตไม่ดึงขาบูต LOW และไม่ป้อนไฟเกิน 3.3 V ดู [Espressif: ESP32-C3 GPIO](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/peripherals/gpio.html) และ [ESP8266 boot mode](https://docs.espressif.com/projects/esptool/en/latest/esp8266/advanced-topics/boot-mode-selection.html)
 
 - ต่อ GND ของ ESP กับ GND ของโมดูล A/B ร่วมกัน **เมื่อใช้อินพุตควบคุมร่วมกัน**; ต่อ `IN1..IN4` ตามตาราง ตรวจตำแหน่ง `VCC/GND/IN` ที่พิมพ์บนบอร์ดจริงก่อนเสียบสาย
 - กำหนดไฟเลี้ยง `VCC` จากสเปกโมดูลที่ซื้อและผลวัด ไม่ต่อ 5 V เข้าขา GPIO/3V3 ของ ESP โดยตรง หากโมดูลรับอินพุต 3.3 V ไม่แน่นอนหรือมี pull-up ไป 5 V ให้ใช้วงจรขับ/level interface ที่ระบุสเปกชัดเจน
 - คอยล์ Songle 5 V รุ่นนี้กินประมาณ 71.4 mA/ตัว; 8 ตัวพร้อมกันเป็นประมาณ 0.57 A **เฉพาะคอยล์** (ยังไม่รวม LED/วงจรขับ/ESP) จึงควรเริ่มออกแบบด้วยแหล่งจ่าย 5 V ที่มีกระแสสำรอง เช่น 2 A **หากบอร์ดโมดูลระบุว่าใช้ไฟเลี้ยง 5 V** แล้ววัดกระแสจริงขณะทุกช่อง ON อย่าดึงกระแสคอยล์จาก GPIO หรือขา 3V3 ของบอร์ด ESP
 - ขั้วโหลดแต่ละช่องเป็น `COM/NO/NC`: ตรวจ silk screen และวัด continuity เพื่อยืนยันตำแหน่งก่อนต่อโหลด `COM–NO` เหมาะเมื่ออยากให้หน้าสัมผัสเปิดตอนคอยล์ไม่มีไฟ ค่า 10 A ที่พิมพ์บนรีเลย์เป็นพิกัด **ชิ้นส่วน** ไม่ใช่การรับรองทั้งโมดูล/สาย/ขั้วต่อสำหรับโหลดทุกชนิด
-- โค้ดนี้เป็น active-low (`LOW` = สั่ง ON) และตั้งค่าเอาต์พุต HIGH (OFF) ก่อนเปิดโหมด OUTPUT ทุกครั้งที่บูต โดยไม่โหลดสถานะเก่าจาก Flash/EEPROM; ทดสอบการเปิดเครื่อง/รีเซ็ตกับ LED หรือโหลดแรงดันต่ำก่อนต่อระบบจริง
+- ESP32 และ ESP32-C3 ตั้ง `RELAY_ACTIVE_HIGH = true` อิงจากภาพ Wokwi ที่ `LED1` ติดเมื่อ `IN` เป็น HIGH: ON → HIGH และ OFF/เริ่มบูต → LOW ส่วน ESP8266 ตั้ง `false` ตามข้อจำกัด D3/D4 ที่ต้อง HIGH ระหว่าง reset; เปลี่ยนตัวแปรนี้ให้ตรงกับโมดูลจริงก่อนแฟลช และทดสอบกับ LED/โหลดแรงดันต่ำ
 - รายการชิ้นส่วนและเงื่อนไขการเลือกซื้ออยู่ใน [BOM ของโปรเจกต์](BOM.md)
 
 ### ข้อจำกัดที่ควรทราบของโค้ดเวอร์ชันนี้
@@ -101,7 +101,7 @@ The GUI displays ESP-reported state, not measured contact state. This version us
 
 ## 📡 Communication Protocol (current 5-byte version)
 
-**Serial:** 115200 baud, 8N1. Every frame is `[STX=02] [CMD] [DATA] [CHECKSUM] [ETX=03]`, where `CHECKSUM = FF XOR CMD XOR DATA` (one byte). Bit 0 of DATA controls CH1; bit 7 controls CH8. Relay outputs are active-low. The checksum detects accidental corruption; it does not authenticate commands.
+**Serial:** 115200 baud, 8N1. Every frame is `[STX=02] [CMD] [DATA] [CHECKSUM] [ETX=03]`, where `CHECKSUM = FF XOR CMD XOR DATA` (one byte). Bit 0 of DATA controls CH1; bit 7 controls CH8. ESP32/ESP32-C3 default to active-high to match the observed Wokwi LED1; ESP8266 defaults to active-low to keep its boot pins safe. Set `RELAY_ACTIVE_HIGH` for the actual board and relay module. The checksum detects accidental corruption; it does not authenticate commands.
 
 | CMD | Direction | Meaning | DATA |
 | --- | --- | --- | --- |
@@ -123,7 +123,7 @@ The GUI reads STATUS feedback, updates checkboxes and writes the transmitted/rec
 
 **Checking the running GUI:** on startup, Communication Log shows `GUI protocol v2 (5 bytes). Running: <full path to RelayControl.exe>`. A connection status request then logs `Command Sent (5 bytes): 02 02 00 FD 03`. If you see a four-byte command, the running executable is an older build: close all RelayControl processes, open `RelayControl/RelayControl.sln`, choose the desired branch, rebuild and start with **F5**. Check the executable path printed in the log. Generated `bin/` and `obj/` files are no longer stored in this repository. A firmware reply of four bytes means the controller or Wokwi sketch still uses the old protocol; upload the matching sketch above.
 
-**Power-up behavior:** all three sketches set every active-low input HIGH before enabling each GPIO output and ignore previously saved states. This controls outputs once `setup()` runs; software cannot force GPIO levels during the MCU's reset/boot interval. For a guaranteed OFF level throughout power-up, verify the relay module's active-low input circuit and add suitable 3.3 V pull-ups or an enable/interlock circuit where needed (particularly ESP8266 D3/D4 boot pins).
+**Power-up behavior:** all three sketches drive `RELAY_OFF_LEVEL` before enabling each GPIO output and ignore previously saved states. With active-high selected, OFF is LOW; with active-low selected, OFF is HIGH. ESP8266 defaults to active-low for its boot-sensitive D3/D4 pins. This takes effect once `setup()` runs; GPIO levels during MCU reset/boot require hardware design. In particular, ESP8266 D3/D4 must stay HIGH during boot and may temporarily activate an active-high relay. Verify `COM–NO` and `COM–NC` contact behavior separately from the Wokwi LED indicator.
 
 ---
 
@@ -136,6 +136,8 @@ Use the matching sketch for your board; the complete code lives in the files bel
 - [ESP8266 NodeMCU/D1 mini](firmware/ESP8266_RelayControl/ESP8266_RelayControl.ino): board pins D0–D7 in channel order; check D3/D4 boot levels described above.
 
 All three implement the five-byte protocol above. The GUI code is in [`Form1.cs`](RelayControl/RelayControl/Form1.cs). The optional UI branch adds ALL ON, ALL OFF, and serial-port Refresh controls; the protocol and sketches are the same on both branches.
+
+**Relay polarity:** each sketch defines `RELAY_ACTIVE_HIGH` near `relayPins[]`. ESP32 and ESP32-C3 default to `true` to match the LED1 behavior observed in the Wokwi setup shown: status `00` drives all IN pins LOW and status `FF` drives them HIGH. ESP8266 defaults to `false` so its D3/D4 boot pins stay OFF while HIGH. Set this value to match the actual input circuit and verify the contacts before attaching loads. This setting does not change the five-byte protocol or channel mapping.
 
 ### PlatformIO / Wokwi (`src/main.cpp`)
 
