@@ -4,11 +4,13 @@
   <img src="https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=csharp&logoColor=white" alt="C#" />
   <img src="https://img.shields.io/badge/.NET_4.5-5C2D91?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET" />
   <img src="https://img.shields.io/badge/Arduino-00979D?style=for-the-badge&logo=arduino&logoColor=white" alt="Arduino" />
-  <img src="https://img.shields.io/badge/Version-1.1.5.26-blue?style=for-the-badge" alt="Version" />
+  <img src="https://img.shields.io/badge/Version-2.0.9.2026-blue?style=for-the-badge" alt="Version" />
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License" />
 </p>
 
-![Relay Control GUI](RelayControl/RelayControl/screenshot.png) 
+![หน้าตา Relay Control 8CH รุ่น 2.0.9.2026](RelayControl/RelayControl/screenshot.png)
+
+ภาพตัวอย่างโปรแกรมเวอร์ชัน `2.0.9.2026` จาก GUI จริง (ภาพขณะยังไม่ได้เชื่อมต่อกับบอร์ด)
 
 [🇹🇭 ภาษาไทย](#ภาษาไทย) | [🇬🇧 English](#english)
 
@@ -21,8 +23,10 @@
 โปรแกรมนี้ส่งคำสั่งเปิด-ปิดรีเลย์ผ่าน ESP32 และอ่านสถานะที่เฟิร์มแวร์ส่งกลับเพื่ออัปเดต GUI โดยสถานะที่ส่งกลับเป็นค่าคำสั่งล่าสุด ไม่ใช่การวัดหน้าสัมผัสรีเลย์จริง โดยโปรโตคอล 5 ไบต์รองรับ bitmask ทุกค่า รวมถึง `0x05` (CH1+CH3)
 
 ### คุณสมบัติหลัก
-*   **ควบคุมรีเลย์ 8 ช่อง:** สามารถเปิด/ปิด รีเลย์แต่ละช่องได้อย่างอิสระผ่าน CheckBox บน GUI
-*   **การเชื่อมต่อ Serial Port:** เชื่อมต่อผ่าน USB Serial (Baudrate: 115200)
+*   **ควบคุมรีเลย์ 8 ช่อง:** คลิกปุ่ม CH1–CH8 เพื่อเปิด/ปิดแต่ละช่อง; สีเขียวหมายถึง ON
+*   **ควบคุมพร้อมกัน:** ปุ่ม **ALL ON** และ **ALL OFF** สั่งทั้ง 8 ช่องในครั้งเดียว
+*   **การเชื่อมต่อ Serial Port:** เชื่อมต่อผ่าน USB Serial (Baudrate: 115200); ปุ่ม **Refresh** โหลดรายชื่อพอร์ตใหม่เมื่อถอด/ต่อบอร์ด
+*   **Communication Log:** แสดงคำสั่งที่ส่งและสถานะที่ได้รับ พร้อมเวลาและข้อมูลเฟรม 5 ไบต์ เมื่อมีการสื่อสารกับบอร์ด
 *   **Status Feedback:** โปรแกรมแสดงค่าที่ ESP ส่งกลับเมื่อเชื่อมต่อหรือเปลี่ยนสถานะ โดยทุกครั้งที่บูตจะเริ่มจาก OFF ทั้ง 8 ช่อง; ไม่ได้ตรวจหน้าสัมผัสจริง
 *   **โปรโตคอลแบบมี checksum:** ใช้โครงสร้างข้อมูลแบบ Frame `[STX] [CMD] [DATA] [CHECKSUM] [ETX]` เพื่อป้องกันข้อมูลผิดพลาด
 
@@ -66,10 +70,11 @@
 ### การใช้งาน
 1. อัปโหลดโค้ด Arduino ลงในบอร์ด ESP32 (ดูโค้ดด้านล่าง)
 2. ต่อสายรีเลย์เข้ากับขา GPIO ของ ESP32 ตามที่กำหนดในโค้ด
-3. เปิดโปรแกรม `RelayControlApp`
-4. เลือกพอร์ต COM ที่เชื่อมต่อกับ ESP32
-5. กดปุ่ม **Connect**
-6. สามารถคลิกที่ CheckBox ของแต่ละ Relay เพื่อสั่งเปิด/ปิดได้ทันที
+3. เปิดโปรแกรม `RelayControlApp` จากไฟล์ที่ build ใน `RelayControl/RelayControl.sln`
+4. เลือกพอร์ต COM ที่เชื่อมต่อกับ ESP32; ถ้าเพิ่งเสียบบอร์ด ให้กด **Refresh** ก่อนเลือกพอร์ต
+5. กด **Connect** แล้วรอสถานะตอบกลับจากบอร์ดใน **Communication Log**
+6. คลิก CH1–CH8 เพื่อสั่งแต่ละช่อง หรือกด **ALL ON / ALL OFF** เพื่อสั่งทุกช่อง
+7. หากถอดและเสียบบอร์ดใหม่ ให้กด **Refresh** แล้วเชื่อมต่อกับพอร์ตที่ปรากฏอีกครั้ง (การ Refresh ขณะเชื่อมต่อจะตัดการเชื่อมต่อก่อน)
 
 ---
 
@@ -80,8 +85,10 @@
 The application sends ON/OFF commands to the ESP32 and displays its reported state. The response reflects the last commanded bitmask, not measured relay contacts. The five-byte protocol supports all bitmasks, including 0x05 for CH1+CH3.
 
 ### Key Features
-*   **8-Channel Relay Control:** Independently control each relay via GUI CheckBoxes.
-*   **Serial Communication:** Connects via USB Serial (Baudrate: 115200).
+*   **8-Channel Relay Control:** Click CH1–CH8 to toggle individual channels; green indicates ON.
+*   **Bulk controls:** **ALL ON** and **ALL OFF** set all eight channels in one command.
+*   **Serial Communication:** USB Serial at 115200 baud; **Refresh** rescans ports when a board is unplugged or reconnected.
+*   **Communication Log:** Timestamped sent commands and received status frames while communicating with the board.
 *   **Status Feedback:** Displays the ESP32-reported bitmask; firmware starts with all eight channels OFF after every power cycle or reset. It does not sense physical contacts.
 *   **Framed protocol with XOR checksum:** Uses a framed data structure `[STX] [CMD] [DATA] [CHECKSUM] [ETX]` to prevent data corruption.
 
@@ -94,10 +101,11 @@ The GUI displays ESP-reported state, not measured contact state. This version us
 ### How to Use
 1. Upload the provided Arduino code to your ESP32 board.
 2. Connect the relay module to the ESP32 GPIO pins as defined in the code.
-3. Launch the `RelayControlApp`.
-4. Select the COM port connected to the ESP32.
-5. Click the **Connect** button.
-6. Toggle the CheckBoxes to control each relay.
+3. Launch `RelayControlApp` built from `RelayControl/RelayControl.sln`.
+4. Select the board's COM port; click **Refresh** first if you just reconnected it.
+5. Click **Connect** and check **Communication Log** for the board's status response.
+6. Click CH1–CH8 for individual channels, or **ALL ON / ALL OFF** for all channels.
+7. After unplugging and reconnecting the board, click **Refresh** and connect again; refreshing disconnects an active connection.
 
 ---
 
@@ -140,7 +148,7 @@ Use the matching sketch for your board; the complete code lives in the files bel
 
 **Arduino IDE / ESP32-C3 จริง:** เปิดไฟล์ `firmware/ESP32C3_RelayControl/ESP32C3_RelayControl.ino` ใน Arduino IDE โดยตรง (อย่าใช้ไฟล์ ESP32 รุ่นปกติหรือสำเนาเก่าจาก Wokwi) สเก็ตช์นี้กำหนด `RELAY_ACTIVE_HIGH = false` สำหรับโมดูลจริงอยู่แล้ว เลือกบอร์ด ESP32-C3 และพอร์ตของบอร์ดจริง แล้วกด Upload; หากใช้ USB ภายในให้เปิด USB CDC On Boot ตามการตั้งค่าบอร์ด `driver/gpio.h` มากับ ESP32 Arduino core และไม่ต้องติดตั้งไลบรารีแยก หลังอัปโหลดให้ทดลอง ON/OFF ทีละช่องกับโมดูลจริงและตรวจ `COM–NO` ด้วย
 
-All firmware versions implement the five-byte protocol above. The GUI code is in [`Form1.cs`](RelayControl/RelayControl/Form1.cs). The optional UI branch adds ALL ON, ALL OFF, and serial-port Refresh controls; the protocol and sketches are the same on both branches.
+All firmware versions implement the five-byte protocol above. The GUI code is in [`Form1.cs`](RelayControl/RelayControl/Form1.cs). The current `main` GUI includes ALL ON, ALL OFF, serial-port Refresh, and the Communication Log; its Windows Forms layout is in [`Form1.Designer.cs`](RelayControl/RelayControl/Form1.Designer.cs).
 
 **Relay polarity:** the two ESP32-C3 files are ready to use without editing settings. The Arduino IDE sketch has `RELAY_ACTIVE_HIGH = false`: status `00` drives all IN pins HIGH and status `FF` drives them LOW. The Wokwi `src/main.cpp` has `RELAY_ACTIVE_HIGH = true`: status `00` drives LOW and status `FF` drives HIGH. The original ESP32 sketch defaults to `true`; ESP8266 defaults to `false`. Check the real relay contacts before attaching loads. Both ESP32-C3 files use the same five-byte protocol and channel mapping.
 
@@ -149,7 +157,7 @@ All firmware versions implement the five-byte protocol above. The GUI code is in
 Copy [the Wokwi-specific ESP32-C3 file](firmware/ESP32C3_Wokwi/src/main.cpp) to **your Wokwi project's** `src/main.cpp`, replacing its previous contents. Use `framework = arduino` and your ESP32-C3 board ID in that project's `platformio.ini`, then rebuild the simulation. Do not add `-DRELAY_ACTIVE_HIGH` or change the polarity: the Wokwi file already sets `true`. Keep only one `setup()` and `loop()` pair in the Wokwi project. For the real board, open and upload the **separate** [Arduino IDE `.ino` file](firmware/ESP32C3_RelayControl/ESP32C3_RelayControl.ino); it already sets `false`. Never copy the Wokwi `main.cpp` to the physical board.
 
 ---
-**Developer:** TOPTUBBY (Patiphan Phakdeeburi) | **Version:** 1.1.5.26
+**Developer:** TOPTUBBY (Patiphan Phakdeeburi) | **Version:** 2.0.9.2026
 
 ### 📜 License / ลิขสิทธิ์
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.  
